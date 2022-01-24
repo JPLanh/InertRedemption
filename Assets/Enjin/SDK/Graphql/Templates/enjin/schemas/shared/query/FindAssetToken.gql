@@ -1,0 +1,18 @@
+#namespace enjin.sdk.shared.FindAssetToken
+
+#arg name String!
+
+query 
+{
+  result:EnjinTokens
+  (
+    name:$name
+  )
+  {
+    id
+    name
+    creator
+    reserve
+    totalSupply
+  }
+}

@@ -1,0 +1,21 @@
+#namespace enjin.sdk.project.MintAsset
+#import enjin.sdk.shared.EnjinTransaction
+
+#arg identityID Int!
+#arg token_id String!
+#arg recipients [String]!
+
+mutation {
+    result: CreateEnjinRequest (
+        identityId: $identityID,
+        appId:5800,
+        type:MINT,
+        mint_token_data:{
+          token_id:$token_id,
+          token_index:"0",
+          recipient_address_array:$recipients
+        }
+  ) {
+        ...EnjinTransaction
+    }
+}

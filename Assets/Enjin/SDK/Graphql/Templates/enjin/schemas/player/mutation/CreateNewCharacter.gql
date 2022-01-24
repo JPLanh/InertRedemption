@@ -1,0 +1,27 @@
+#namespace enjin.sdk.player.CreateNewCharacter
+#import enjin.sdk.shared.EnjinTransaction
+
+#arg identityID Int!
+#arg name String!
+
+mutation {
+    result: CreateEnjinRequest (
+    identityId: $identityID,
+    type: CREATE,
+    create_token_data: {
+      name: $name,
+      totalSupply: 1,
+      initialReserve: 1,
+      supplyModel: COLLAPSING,
+      meltValue: "100000000000000000",
+      meltFeeRatio: 0,
+      transferable: PERMANENT,
+      transferFeeSettings: {
+        type: NONE
+      }
+      nonFungible: true
+    }
+  ) {
+        ...EnjinTransaction
+    }
+}

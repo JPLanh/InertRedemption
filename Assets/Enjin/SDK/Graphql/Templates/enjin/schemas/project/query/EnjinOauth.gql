@@ -1,0 +1,23 @@
+#namespace enjin.sdk.project.EnjinOauth
+
+#arg name String!
+
+query {
+    result: EnjinOauth(name: $name)
+    {
+        id
+        name
+        accessTokens
+        isPlayer
+        identities{
+          id
+          linkingCode
+          linkingCodeQr      
+            wallet{
+                ethAddress
+            }
+        }
+        createdAt
+        updatedAt
+    }
+}

@@ -1,0 +1,13 @@
+#namespace enjin.sdk.project.CreatePlayer
+
+#arg name String!
+
+mutation {
+    result: CreateEnjinUser(
+        name: $name
+    ) {
+        accessTokens
+        id
+        name
+    }
+}

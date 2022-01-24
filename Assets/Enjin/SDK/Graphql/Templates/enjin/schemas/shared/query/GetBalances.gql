@@ -1,0 +1,18 @@
+#namespace enjin.sdk.shared.GetBalances
+
+#arg ethAddress String!
+#arg appIds [Int]!
+
+query {
+    result: EnjinBalances(ethAddress: $ethAddress, appIds: $appIds)
+    {
+        index
+        value
+        token {
+            id
+            name
+            meltValue
+            metadataURI
+        }
+    }
+}

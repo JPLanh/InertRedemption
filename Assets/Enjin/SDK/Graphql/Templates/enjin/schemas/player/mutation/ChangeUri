@@ -1,0 +1,23 @@
+#namespace enjin.sdk.player.ChangeURI
+
+#arg identityID Int!
+#arg token_id String!
+#arg item_uri String!
+
+mutation {
+    CreateEnjinRequest (
+        identityId: $identityID, 
+        appId: 5800,
+        type: SET_ITEM_URI, 
+        set_item_uri_data: { 
+            token_id: $id,
+            token_index: 0,
+            item_uri: $uri
+        }
+    )
+    {
+        id
+        encodedData
+        state
+    }
+}

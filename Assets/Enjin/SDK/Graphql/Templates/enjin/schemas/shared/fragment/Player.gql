@@ -1,0 +1,17 @@
+#namespace enjin.sdk.shared.Player
+#import enjin.sdk.shared.Wallet
+
+#arg withPlayerWallet Boolean true
+
+fragment EnjinIdentity on EnjinIdentity {
+    id
+    appId
+    linkingCode
+    linkingCodeQr
+    wallet @include(if: $withPlayerWallet)
+    {
+        ...EnjinWallet
+    }
+    createdAt
+    updatedAt
+}

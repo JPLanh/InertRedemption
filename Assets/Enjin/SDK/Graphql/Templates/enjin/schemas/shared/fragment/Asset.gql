@@ -1,0 +1,46 @@
+#namespace enjin.sdk.shared.Asset
+
+#arg withAssetBlocks Boolean false
+#arg withCreator Boolean false
+#arg withMeltDetails Boolean false
+#arg withMetadataURI Boolean false
+#arg withSupplyDetails Boolean false
+#arg withTransferSettings Boolean false
+#arg withAssetVariantMode Boolean false
+#arg withAssetVariants Boolean false
+#arg withAssetMetadata Boolean false
+
+fragment EnjinToken on EnjinToken {
+    id
+    name
+    nonFungible
+    creator @include(if: $withCreator)
+    blockHeight @include(if: $withAssetBlocks)
+    firstBlock @include(if: $withAssetBlocks)
+    reserve @include(if: $withSupplyDetails)
+    supplyModel @include(if: $withSupplyDetails)
+    circulatingSupply @include(if: $withSupplyDetails)
+    mintableSupply @include(if: $withSupplyDetails)
+    totalSupply @include(if: $withSupplyDetails)
+    meltFeeRatio @include(if: $withMeltDetails)
+    meltFeeMaxRatio @include(if: $withMeltDetails)
+    meltValue @include(if: $withMeltDetails)
+    metadataURI @include(if: $withMetadataURI)
+    transferable @include(if: $withTransferSettings)
+    transferFeeSettings @include(if: $withTransferSettings) {
+        type
+        assetId
+        value
+    }    
+    variantMode @include(if: $withAssetVariantMode)
+    variants @include(if: $withAssetVariants) {
+        id
+        assetId
+        variantMetadata @include(if: $withAssetMetadata)
+        usageCount
+        createdAt
+        updatedAt
+    }
+    createdAt
+    updatedAt
+}

@@ -1,0 +1,22 @@
+#namespace enjin.sdk.player.MintNFT
+#import enjin.sdk.shared.Transaction
+
+#arg identityID Int!
+#arg token_id String!
+#arg token_index String!
+#arg recipients [String]!
+
+mutation {
+  CreateEnjinRequest(
+    identityId: identityID,
+    appId:5800,
+    type:MINT,
+    mint_token_data:{
+      token_id: $token_id,
+      token_index:$token_index,
+      recipient_address_array: $recipients
+    }
+  ){
+        ...Transaction
+  }
+}

@@ -1,0 +1,16 @@
+#namespace enjin.sdk.player.GetPlayer
+#import enjin.sdk.shared.Player
+
+#arg name String!
+
+query {
+    result: EnjinUser(name: $name)
+    {
+        id
+        name
+        accessTokens
+        identities{
+            ...EnjinIdentity
+        }
+    }
+}
