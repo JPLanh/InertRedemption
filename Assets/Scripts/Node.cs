@@ -9,7 +9,6 @@ public class Node : MonoBehaviour, Interactable, Displayable
     Vector3 position;
     public int energy = 0;
     float nextHarvest;
-    public Base owner;
     public float conversionTimer = 0;
     public float conversion = 0;
     public int resourceNum;
@@ -142,32 +141,32 @@ public class Node : MonoBehaviour, Interactable, Displayable
                 conversionTimer = Time.time + 1;
             }
 
-            if (conversion > 99 && owner == null)
-            {
-                conversion = 100;
-                position = transform.position + new Vector3(0f, 2f, 0f);
-//                owner = GameObject.Find(getTeam + " Base").GetComponent<Base>();
-                transferCenter.team = getTeam;
-                GetComponent<Rigidbody>().isKinematic = true;
-                conversionTimer = Time.time + 1;
-            }
+//            if (conversion > 99 && owner == null)
+//            {
+//                conversion = 100;
+//                position = transform.position + new Vector3(0f, 2f, 0f);
+////                owner = GameObject.Find(getTeam + " Base").GetComponent<Base>();
+//                transferCenter.team = getTeam;
+//                GetComponent<Rigidbody>().isKinematic = true;
+//                conversionTimer = Time.time + 1;
+//            }
         }
-        if (owner != null) {
-            if (transform.position != position + new Vector3(0f, 2f, 0f))
-                transform.position = Vector3.MoveTowards(transform.position, position + new Vector3(0f, 2f, 0f), 2 * Time.deltaTime);
-            else
-            {
-                GetComponent<Light>().enabled = true;
-                GetComponent<Light>().color = owner.getTeamColor();
-            }
-            if (conversion <= 0)
-            {
-                conversion = 0;
-                GetComponent<Rigidbody>().isKinematic = false;
-                owner = null;
+        //if (owner != null) {
+        //    if (transform.position != position + new Vector3(0f, 2f, 0f))
+        //        transform.position = Vector3.MoveTowards(transform.position, position + new Vector3(0f, 2f, 0f), 2 * Time.deltaTime);
+        //    else
+        //    {
+        //        GetComponent<Light>().enabled = true;
+        //        GetComponent<Light>().color = owner.getTeamColor();
+        //    }
+        //    if (conversion <= 0)
+        //    {
+        //        conversion = 0;
+        //        GetComponent<Rigidbody>().isKinematic = false;
+        //        owner = null;
 
-            }
-        }
+        //    }
+        //}
     }
 
     public string display()

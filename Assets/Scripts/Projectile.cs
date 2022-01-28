@@ -73,7 +73,6 @@ public class Projectile : MonoBehaviour
         }
         if (!other.transform.GetComponent<Projectile>() &&
             !other.transform.GetComponent<NodeCollision>() &&
-            !other.transform.GetComponent<ConsumeAbility>() &&
             (other.gameObject.layer != LayerMask.NameToLayer("LivingBeingsBlocker")))
         {
             GameObject objHit = Instantiate(impactEffect, transform.position, transform.rotation);

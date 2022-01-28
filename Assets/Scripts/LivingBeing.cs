@@ -118,10 +118,6 @@ public class LivingBeing : MonoBehaviour, Damagable
         }
         else
         {
-            if (GetComponent<Worm>() != null)
-            {
-                GetComponent<Worm>().getDamaged();
-            }
             if (health < 0)
             {
                 survivorList.GetComponent<Survivors>().removeMarkedTarget(this.gameObject);

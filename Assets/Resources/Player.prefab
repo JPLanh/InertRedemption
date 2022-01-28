@@ -687,7 +687,9 @@ MonoBehaviour:
   characterController: {fileID: 2373817777615240460}
   crosshair: {fileID: 0}
   survivorsGO: {fileID: 0}
-  lv_move: {fileID: 3944483436679000424}
+  movementController: {fileID: 3944483436679000424}
+  em: {fileID: 0}
+  ifs: {fileID: 6822706958078688732}
   canvas: {fileID: 0}
   userProjectionAnimator: {fileID: 576640461661461867}
   displayInterface: {fileID: 6821106647154117341}
@@ -727,7 +729,7 @@ CharacterController:
   m_GameObject: {fileID: 2373817777615240450}
   m_Material: {fileID: 0}
   m_IsTrigger: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 2
   m_Height: 5.83
   m_Radius: 0.84
@@ -818,6 +820,7 @@ MonoBehaviour:
   lv_playerController: {fileID: 2373817777615240463}
   rotation: {x: 0, y: 0, z: 0}
   moveDirection: {x: 0, y: 0, z: 0}
+  lead: {fileID: 0}
   running_footstep: {fileID: 4223565847650142478}
   walking_footstep: {fileID: 6970715409705331844}
 --- !u!1 &2712385882797971900
@@ -2090,7 +2093,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7127917239901574572}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -2.0272174, y: -0.34455025, z: 1.0263655}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 3361944910921145828}

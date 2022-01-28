@@ -8,8 +8,9 @@ public class PlayerCanvas : MonoBehaviour
     public GameObject crosshair;
     public GridSystem gridSystem;
     public ToastNotifications toast;
-    public compass playerCompass;
+    public Compass playerCompass;
     public TimeSystem timeSystem;
+    public GameObject lead;
 
 
     public LightIndicator lightIndicator;

@@ -19,8 +19,9 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
     public CharacterController characterController;
     public GameObject crosshair;
     public Survivors survivorsGO;
-    public BasicMovement lv_move;
+    public BasicMovement movementController;
     public EntityManager em;
+    public InfectionScript ifs;
 
     public PlayerCanvas canvas;
     public Animator userProjectionAnimator;
@@ -39,7 +40,6 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
 
     private float spamTimer = 0f;
     public int dataCount = 0;
-    public Base team { get; set; }
     public string teamColor;
     public bool autorun = false;
 
@@ -175,9 +175,11 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
 
     void Update()
     {
+
+        networkListener.networkActionListen();
+        networkListener.networkPositionListen();
         if (isAlive && inControl)
         {
-
 
             if (rechargeStation) refillWeapons();
 
@@ -207,6 +209,15 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
                 //}
             }
         }
+    }
+
+    public float getHealth()
+    {
+        return livingBeing.health;
+    }
+
+    private void FixedUpdate()
+    {
     }
 
     public void emitSound(string in_sound, bool repeat)
@@ -813,7 +824,7 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
                 displayInterface.SetActive(false);
                 livingBeing.setAnimation("isAiming", false);
                 //                canLook = false;
-                if (isLocal)
+                if (name.Equals(NetworkMain.Username))
                 {
                     Cursor.lockState = CursorLockMode.None;
                     crosshair.SetActive(false);
@@ -855,7 +866,7 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
             mainMenuGO = null;
             canLook = true;
             //            sendAction("Menu");
-            if (isLocal)
+            if (name.Equals(NetworkMain.Username))
             {
                 Cursor.lockState = CursorLockMode.Locked;
                 crosshair.SetActive(true);
@@ -1072,35 +1083,7 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
         switch (parsedAction[0])
         {
             case "Update":
-                if (in_payload.source != NetworkMain.Username)
-                {
-                    if (in_payload.data["State"] == "Alive")
-                    {
-                        em.spawnPlayer(in_payload.data);
-                    }
-                    else
-                    {
-                        if (in_payload.data["State"] == "Alive")
-                            serverControl(in_payload.data);
-                        else if (in_payload.data["State"] == "Dead")
-                            Destroy(gameObject);
-                    }
-                }
-                else
-                {
-                        if (isMovable())
-                        {
-                            serverControl(in_payload.data);
-                        }
-                        if (NetworkMain.isHost != bool.Parse(in_payload.data["host"]))
-                        {
-                            NetworkMain.isHost = bool.Parse(in_payload.data["host"]);
-                            if (bool.Parse(in_payload.data["host"]))
-                            {
-                                em.newHost();
-                            }
-                        }
-                }
+                serverControl(in_payload.data);
                 break;
             case "Infect":
                 foreach (KeyValuePair<string, VirusController> it_virus in EntityManager.virus)
@@ -1174,24 +1157,54 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
             }
 
             livingBeing.legsAnimator.SetBool("Running", true);
-            lv_move.playMovementSound();
-            this.transform.position = StringUtils.getVectorFromJson(payload, "Pos");// new Vector3(float.Parse(payload["xPos"]), float.Parse(payload["yPos"]), float.Parse(payload["zPos"]));
-                                                                                    //        playerCamera.transform.localRotation = Quaternion.Euler(float.Parse(payload["xRot"]), 0, 0);
-                                                                                    //livingBeing.mainHand.transform.localRotation = Quaternion.Euler(0, 0, -float.Parse(payload["xRot"]));
-                                                                                    //livingBeing.weaponHarness.transform.localRotation = Quaternion.Euler(-float.Parse(payload["xRot"]), 0, 0);
-            livingBeing.upperBody.transform.localRotation = Quaternion.Euler(float.Parse(payload["xRot"]), 0, 0);
-            transform.eulerAngles = new Vector2(0, float.Parse(payload["yRot"]));
+            movementController.playMovementSound();
+            //            this.transform.position = StringUtils.getVectorFromJson(payload, "Pos");// new Vector3(float.Parse(payload["xPos"]), float.Parse(payload["yPos"]), float.Parse(payload["zPos"]));
+            //        playerCamera.transform.localRotation = Quaternion.Euler(float.Parse(payload["xRot"]), 0, 0);
+            //livingBeing.mainHand.transform.localRotation = Quaternion.Euler(0, 0, -float.Parse(payload["xRot"]));
+            //livingBeing.weaponHarness.transform.localRotation = Quaternion.Euler(-float.Parse(payload["xRot"]), 0, 0);
+            StartCoroutine(LerpPosition(StringUtils.getVectorFromJson(payload, "Pos"), .025f));
+            //Quaternion newAngle = Quaternion.Euler(float.Parse(payload["xRot"]), 0f, 0f);
+            //StartCoroutine(LerpRotation(livingBeing.upperBody.transform.localRotation, newAngle, .025f));
+            Quaternion newAngle = Quaternion.Euler(0f, float.Parse(payload["yRot"]), 0f);
+            StartCoroutine(LerpRotation(transform.rotation, newAngle, .025f));
+            //livingBeing.upperBody.transform.localRotation = Quaternion.Euler(float.Parse(payload["xRot"]), 0, 0);
+            //transform.eulerAngles = new Vector2(0, float.Parse(payload["yRot"]));
         }
         else
         {
 
             livingBeing.legsAnimator.SetBool("Running", false);
-            lv_move.stopMovementSound();
+            movementController.stopMovementSound();
         }
 
     }
-    #endregion
+    IEnumerator LerpPosition(Vector3 targetPosition, float duration)
+    {
+        float time = 0;
+        Vector3 startPosition = transform.position;
 
+        while (time < duration)
+        {
+            transform.position = Vector3.Lerp(startPosition, targetPosition, time / duration);
+            time += Time.deltaTime;
+            yield return null;
+        }
+        transform.position = targetPosition;
+    }
+
+    IEnumerator LerpRotation(Quaternion currentPosition, Quaternion targetPosition, float duration)
+    {
+        float time = 0;
+        Quaternion startPosition = transform.rotation;
+
+        while (time < duration)
+        {
+            transform.rotation = Quaternion.Lerp(transform.rotation, targetPosition, time / duration);
+            time += Time.deltaTime;
+            yield return null;
+        }
+        transform.rotation = targetPosition;
+    }
     //public void joinGame(Dictionary<string, string> payload)
     //{
     //    NetworkMain.socket.Emit("Player", JsonConvert.SerializeObject(payload));
@@ -1226,6 +1239,7 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
 
         }
     }
+    #endregion
 
     void OnTriggerEnter(Collider col)
     {
@@ -1252,28 +1266,33 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
 
         if (col.TryGetComponent<ConsolePod>(out ConsolePod pod))
         {
-            switch (pod.action)
+            if (name.Equals(NetworkMain.Username))
             {
-                case "Infection Checker":
-                    pod.updateMonitor($"Current Infection: {livingBeing.infectionRate}");
-                    break;
-                case "Console":
-                    rechargeStation = true;
-                    accessEqConsole(true, true);
-                    break;
-                case "Enter Teleport":
-                    transform.SetParent(survivorsGO.spaceshipList.transform);
-                    transform.localPosition = new Vector3(0f, 3f, 0f);
-                    break;
-                case "Exit Teleport":
-                    canAttack = true;
-                    transform.SetParent(survivorsGO.landing_zone);
-                    transform.localPosition = new Vector3(0f, 0f, 0f);
-                    transform.SetParent(survivorsGO.survivorList.transform);
-                    break;
-                case "Fuel Ship":
-                    fuelShip(pod);
-                    break;
+                switch (pod.action)
+                {
+                    case "Infection Checker":
+                        pod.updateMonitor($"Current Infection: {livingBeing.infectionRate}");
+                        break;
+                    case "Console":
+                        rechargeStation = true;
+                        accessEqConsole(true, true);
+                        break;
+                    case "Enter Teleport":
+                        canvas.lead.transform.SetParent(survivorsGO.spaceshipList.transform);
+                        canvas.lead.transform.localPosition = new Vector3(0f, 3f, 0f);
+                        canvas.lead.transform.SetParent(canvas.transform.parent);
+                        break;
+                    case "Exit Teleport":
+                        canAttack = true;
+                        canvas.lead.transform.SetParent(survivorsGO.landing_zone);
+                        canvas.lead.transform.localPosition = new Vector3(0f, 0f, 0f);
+                        canvas.lead.transform.SetParent(canvas.transform.parent);
+                        break;
+                    case "Fuel Ship":
+                        fuelShip(pod);
+                        break;
+                }
+
             }
         }
     }
@@ -1392,11 +1411,6 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
                 }
             }
         }
-    }
-
-    public void transferHardDrive(Transform from, Transform to)
-    {
-        from.Find("Hard Drive").SetParent(to.transform);
     }
 
     public Vector3 getBuildingPlacement(Vector3 worldPosition)
@@ -1520,7 +1534,7 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
 
     public InfectionScript getInfectionScript()
     {
-        return GetComponent<InfectionScript>();
+        return ifs;
     }
 
     public void setSingleHandUse(bool in_bool)

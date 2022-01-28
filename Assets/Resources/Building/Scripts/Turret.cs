@@ -18,8 +18,6 @@ public class Turret : MonoBehaviour, Damagable, Displayable, IBuilding, Interact
 
     [SerializeField]
     private Transform turretHead;
-    [SerializeField]
-    private Base team;
 
     [SerializeField]
     private float health;

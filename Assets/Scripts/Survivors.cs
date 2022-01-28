@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Survivors : MonoBehaviour
 {
-    public compass survivorCompass;
+    public Compass survivorCompass;
     public GameObject survivorList;
     public GameObject buildingList;
     public GameObject spaceshipList;

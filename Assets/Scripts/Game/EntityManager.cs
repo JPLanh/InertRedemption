@@ -59,7 +59,7 @@ public class EntityManager : MonoBehaviour
  //           NetworkMain.getUpdates(localPlayer);
         }
 
-//        spawnTestDummies("Test Dummy 1");
+  //      spawnTestDummies("Test Dummy 1");
         //spawnTestDummies("Test Dummy 2");
         //spawnTestDummies("Test Dummy 3");
 
@@ -196,6 +196,7 @@ public class EntityManager : MonoBehaviour
             out_playerController.survivorsGO = survivorPlaceHolder;
             out_playerController.networkListener = new PlayerNetworkListener(payload["Username"]);
             out_playerController.networkListener.controller = out_playerController;
+            NetworkMain.payloadStack.Add(payload["Username"], out_playerController.networkListener);
             out_playerController.em = this;
             survivors.Add(payload["Username"], out_playerController);
             out_playerController.emitSound("Heartbeat", true);
@@ -203,6 +204,9 @@ public class EntityManager : MonoBehaviour
             out_playerController.livingBeing.health = StringUtils.convertToFloat(payload["health"]);
             if (payload["Username"] == NetworkMain.Username)
             {
+                lv_canvas.lead.transform.position = out_playerController.transform.position;
+                out_playerController.movementController.lead = lv_canvas.lead;
+                out_playerController.characterController = lv_canvas.lead.GetComponent<CharacterController>();
                 if (payload.TryGetValue("Host", out string isaHost))
                     NetworkMain.isHost = bool.Parse(isaHost);
                 out_playerController.setActivePlayer(payload["UserID"], payload["Username"], lv_canvas);
@@ -216,9 +220,15 @@ public class EntityManager : MonoBehaviour
             players.Add(payload["Username"], out_virusController);
             out_virusController.networkListener = new PlayerNetworkListener(payload["Username"]);
             out_virusController.networkListener.controller = out_virusController;
+            out_virusController.virusList = virusList;
+            NetworkMain.payloadStack.Add(payload["Username"], out_virusController.networkListener);
             out_virusController.em = this;
             if (payload["Username"] == NetworkMain.Username)
             {
+                lv_canvas.lead.transform.position = out_virusController.transform.position;
+                out_virusController.movementController.lead = lv_canvas.lead;
+                out_virusController.characterController = lv_canvas.lead.GetComponent<CharacterController>();
+
                 if (payload.TryGetValue("Host", out string isaHost))
                     NetworkMain.isHost = bool.Parse(isaHost);
                 out_virusController.setActivePlayer(payload["UserID"], payload["Username"], lv_canvas);
@@ -301,27 +311,5 @@ public class EntityManager : MonoBehaviour
         GO.transform.GetComponent<Data>().UID = payload["UID"];
         GO.transform.SetParent(itemList.transform);
 
-    }
-
-    public void spawnNPC(Vector3 getPosition, GameObject getBase, int npcNum, int laneNum)
-    {
-        GameObject newNode = Instantiate(Resources.Load<GameObject>("NPC Spawner"), getPosition, Quaternion.Euler(0, 0, 0));
-        newNode.name = "Monstur";
-        newNode.GetComponent<MonsterSpawner>().getBase = getBase.GetComponent<Base>();
-        newNode.GetComponent<MonsterSpawner>().npcNum = npcNum;
-        newNode.GetComponent<MonsterSpawner>().laneNum = laneNum;
-        newNode.GetComponent<MonsterSpawner>().gameTime = gameTime;
-        //        newNode.transform.GetComponent<ResourceSpawner>().resourceNum = Random.Range(0, 1);
-        newNode.transform.SetParent(npcList.transform);
-    }
-
-    public void spawnNPC(Vector3 getPosition)
-    {
-        GameObject newNode = Instantiate(Resources.Load<GameObject>("NPC Spawner"), getPosition, Quaternion.Euler(0, 0, 0));
-        newNode.name = "Monstur";
-        newNode.GetComponent<MonsterSpawner>().survivorsList = survivorsList;
-        newNode.GetComponent<MonsterSpawner>().gameTime = gameTime;
-        //        newNode.transform.GetComponent<ResourceSpawner>().resourceNum = Random.Range(0, 1);
-        newNode.transform.SetParent(npcList.transform);
     }
 }

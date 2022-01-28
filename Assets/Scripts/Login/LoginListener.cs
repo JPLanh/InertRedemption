@@ -41,10 +41,10 @@ public class LoginListener : MonoBehaviour
 
     private void listenHandler()
     {
-        if (NetworkMain.serverResponse.Count > 0)
+        if (NetworkMain.mainMenuResponse.Count > 0)
         {
             {
-                Dictionary<string, string> payload = NetworkMain.serverResponse.Dequeue();
+                Dictionary<string, string> payload = NetworkMain.mainMenuResponse.Dequeue();
                 switch (payload["Action"])
                 {
                     case "Enter Game":

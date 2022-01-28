@@ -56,7 +56,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.5
-  far clip plane: 0.51
+  far clip plane: 500
   field of view: 60
   orthographic: 0
   orthographic size: 5
@@ -143,7 +143,7 @@ CharacterController:
   m_GameObject: {fileID: 8080215568751192946}
   m_Material: {fileID: 0}
   m_IsTrigger: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 2
   m_Height: 2
   m_Radius: 0.5
@@ -167,6 +167,9 @@ MonoBehaviour:
   lv_playerController: {fileID: 3189532361579325031}
   rotation: {x: 0, y: 0, z: 0}
   moveDirection: {x: 0, y: 0, z: 0}
+  lead: {fileID: 0}
+  multiplayerRotation: {x: 0, y: 0, z: 0}
+  multiplayerPosition: {x: 0, y: 0, z: 0}
 --- !u!114 &1465707191850285711
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -202,12 +205,14 @@ MonoBehaviour:
   buildPlacement: {fileID: 0}
   livingBeing: {fileID: 1465707191850285711}
   playerCamera: {fileID: 2508636984212724156}
-  characterController: {fileID: 905944099740790184}
+  characterController: {fileID: 0}
+  movementController: {fileID: 5484121451179189523}
   crosshair: {fileID: 0}
   survivorsGO: {fileID: 0}
   canvas: {fileID: 0}
   userProjectionAnimator: {fileID: 0}
   displayInterface: {fileID: 0}
+  em: {fileID: 0}
   visitingTransferCenter: {fileID: 0}
   userID: 
   harvester: {fileID: 0}
@@ -250,3 +255,4 @@ MonoBehaviour:
   infectedPlayer: {fileID: 0}
   livingBeing: {fileID: 1465707191850285711}
   virusList: {fileID: 0}
+  em: {fileID: 0}

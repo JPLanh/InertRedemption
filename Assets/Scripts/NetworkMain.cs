@@ -12,7 +12,8 @@ using System.Text;
 
 public class NetworkMain : MonoBehaviour
 {
-    private static bool isConnected;
+    private static bool isConnected { get; set; }
+    public static bool isPlaying;
     public static Dictionary<string, ClientsInfo> listOfClients = new Dictionary<string, ClientsInfo>();
     public static string clientType;
     #region QSocket Variables
@@ -26,7 +27,8 @@ public class NetworkMain : MonoBehaviour
     public static String Team { get; set; }
     public static bool local { get; set; }
     //    public static Queue<string> serverResponse = new Queue<string>();
-    public static Queue<Dictionary<string, string>> serverResponse = new Queue<Dictionary<string, string>>();
+    public static Queue<Payload> serverResponse = new Queue<Payload>();
+    public static Queue<Dictionary<string, string>> mainMenuResponse = new Queue<Dictionary<string, string>>();
     public static Queue<string> lobbyResponse = new Queue<string>();
     public static Queue<string> loginResponse = new Queue<string>();
     public static Stack<string> updateResponse = new Stack<string>();
@@ -55,7 +57,7 @@ public class NetworkMain : MonoBehaviour
     public static string lastReceivedUDPPacket = "";
     public static string allReceivedUDPPackets = ""; // clean up this from time to time!
 
-    public static Dictionary<string, Stack<Payload>> payloadStack = new Dictionary<string, Stack<Payload>>();
+    public static Dictionary<string, PlayerNetworkListener> payloadStack = new Dictionary<string, PlayerNetworkListener>();
     #endregion
 
     #region sender variables
@@ -162,70 +164,92 @@ public class NetworkMain : MonoBehaviour
                 .Replace("}\"", "}")
                );
 
-            if(lv_payload.data["Action"].Equals("Join Game"))
+//            Debug.Log(getData.ToString());
+            switch (lv_payload.data["Action"])
             {
-                serverResponse.Enqueue(lv_payload.data);
-                payloadStack.Add(lv_payload.source, new Stack<Payload>());
-            } else
-            {
-                payloadStack[lv_payload.source].Push(lv_payload);
+                case "Join Game":
+                    serverResponse.Enqueue(lv_payload);
+                    Debug.Log($"{lv_payload.source} is joining + WhoIsHere");
+
+                    //if (lv_payload.target == null)
+                    //{
+                    //    if (lv_payload.source.Equals(Username))
+                    //        broadcastAction("WhoisHere");
+                    //} else
+                    //{
+                    //    if (!lv_payload.target.Equals(NetworkMain.Username))
+                    //    {
+                    //        serverResponse.Enqueue(lv_payload);
+                    //        Debug.Log($"{lv_payload.source} is joining");
+                    //    }
+                    //}
+                    break;
+                case "Update":
+                    if (isPlaying) payloadStack[lv_payload.source].positionQueue.Push(lv_payload);
+                    break;
+                case "WhoisHere":
+                    whoisHere(lv_payload);
+                    break;
+                default:
+                    if (isPlaying) payloadStack[lv_payload.source].actionQueue.Push(lv_payload);
+                    break;
             }
         });
 
-        socket.On("Login", (getData) =>
-        {
-            serverResponse.Enqueue(JsonConvert.DeserializeObject<Dictionary<string, string>>(getData.ToString()));
-        });
+        //        socket.On("Login", (getData) =>
+        //        {
+        //            serverResponse.Enqueue(JsonConvert.DeserializeObject<Dictionary<string, string>>(getData.ToString()));
+        //        });
 
-        socket.On("Register", (getData) =>
-        {
-            //serverResponse.Enqueue(getData.ToString());
-            serverResponse.Enqueue(JsonConvert.DeserializeObject<Dictionary<string, string>>(getData.ToString()));
-        });
+        //        socket.On("Register", (getData) =>
+        //        {
+        //            //serverResponse.Enqueue(getData.ToString());
+        //            serverResponse.Enqueue(JsonConvert.DeserializeObject<Dictionary<string, string>>(getData.ToString()));
+        //        });
 
-        socket.On("Join", (getData) =>
-        {
-            //serverResponse.Enqueue(getData.ToString());
-            serverResponse.Enqueue(JsonConvert.DeserializeObject<Dictionary<string, string>>(getData.ToString()));
-        });
+        //        socket.On("Join", (getData) =>
+        //        {
+        //            //serverResponse.Enqueue(getData.ToString());
+        //            serverResponse.Enqueue(JsonConvert.DeserializeObject<Dictionary<string, string>>(getData.ToString()));
+        //        });
 
-        socket.On("Minion", (getData) =>
-        {
-            //            NetworkListener.playerUpdates[getMinion].Push(getData.ToString());
-            updateResponse.Push(getData.ToString());
-        });
+        //        socket.On("Minion", (getData) =>
+        //        {
+        //            //            NetworkListener.playerUpdates[getMinion].Push(getData.ToString());
+        //            updateResponse.Push(getData.ToString());
+        //        });
 
-        socket.On("Lobby Update", (getData) =>
-        {
-//            updateResponse.Push(getData.ToString());
-            serverResponse.Enqueue(JsonConvert.DeserializeObject<Dictionary<string, string>>(getData.ToString()));
-        });
+        //        socket.On("Lobby Update", (getData) =>
+        //        {
+        ////            updateResponse.Push(getData.ToString());
+        //            serverResponse.Enqueue(JsonConvert.DeserializeObject<Dictionary<string, string>>(getData.ToString()));
+        //        });
 
-        socket.On("Mass Update", (getData) =>
-        {
-            updateResponseItnterpolation.Push(getData.ToString());
-        });
+        //        socket.On("Mass Update", (getData) =>
+        //        {
+        //            updateResponseItnterpolation.Push(getData.ToString());
+        //        });
 
-        socket.On("Update", (getData) =>
-        {
-            serverResponse.Enqueue(JsonConvert.DeserializeObject<Dictionary<string, string>>(getData.ToString()));
-        });
+        //        socket.On("Update", (getData) =>
+        //        {
+        //            serverResponse.Enqueue(JsonConvert.DeserializeObject<Dictionary<string, string>>(getData.ToString()));
+        //        });
 
-        socket.On("Resource Update", (getData) =>
-        {
-            serverResponse.Enqueue(JsonConvert.DeserializeObject<Dictionary<string, string>>(getData.ToString()));
-        });
+        //        socket.On("Resource Update", (getData) =>
+        //        {
+        //            serverResponse.Enqueue(JsonConvert.DeserializeObject<Dictionary<string, string>>(getData.ToString()));
+        //        });
 
         socket.On("Action", (getData) =>
         {
-            serverResponse.Enqueue(JsonConvert.DeserializeObject<Dictionary<string, string>>(getData.ToString()));
+            mainMenuResponse.Enqueue(JsonConvert.DeserializeObject<Dictionary<string, string>>(getData.ToString()));
         });
 
-        socket.On("Exit", (getData) =>
-        {
-            //serverResponse.Enqueue(getData.ToString());
-            serverResponse.Enqueue(JsonConvert.DeserializeObject<Dictionary<string, string>>(getData.ToString()));
-        });
+        //        socket.On("Exit", (getData) =>
+        //        {
+        //            //serverResponse.Enqueue(getData.ToString());
+        //            serverResponse.Enqueue(JsonConvert.DeserializeObject<Dictionary<string, string>>(getData.ToString()));
+        //        });
 
         socket.On("Lobby", (getData) =>
         {
@@ -236,6 +260,22 @@ public class NetworkMain : MonoBehaviour
         {
             print(getData.ToString());
         });
+    }
+
+    public static void whoisHere(Payload in_payload)
+    {
+        if (in_payload.target == null && !in_payload.source.Equals(Username))
+        {
+            Dictionary<string, string> payload = new Dictionary<string, string>();
+            payload.Add("Username", NetworkMain.Username);
+            payload.Add("UserID", NetworkMain.UserID);
+            payload.Add("Team", "Survivor");
+            payload.Add("Health", EntityManager.players[NetworkMain.Username].getHealth().ToString());
+            payload.Add("Action", "Join Game");
+            NetworkMain.broadcastAction(payload, in_payload.source);
+            Debug.Log("Being asked");
+        }
+//        broadcastAction("WhoisHere", Username);
     }
 
     public static void test(string getData)
@@ -384,6 +424,13 @@ public class NetworkMain : MonoBehaviour
         if (!local)
         {
             broadcast(in_payload, null);
+        }
+    }
+    public static void broadcastAction(Dictionary<string, string> in_payload, string getTarget)
+    {
+        if (!local)
+        {
+            broadcast(in_payload, getTarget);
         }
     }
 
@@ -650,20 +697,30 @@ public class PlayerNetworkListener
 {
     public string player;
     public IPlayerController controller;
+    public Stack<Payload> positionQueue;
+    public Stack<Payload> actionQueue;
 
     public PlayerNetworkListener(string in_player)
     {
         player = in_player;
+        positionQueue = new Stack<Payload>();
+        actionQueue = new Stack<Payload>();
     }
 
-    public Payload networkListen()
+    public void networkActionListen()
     {
-        if (NetworkMain.payloadStack[player].Count > 0)
+        if (actionQueue.Count > 0)
         {
-            controller.serverControl(NetworkMain.payloadStack[player].Pop());
+            controller.serverControl(actionQueue.Pop());
         }
-        return new Payload();
     }
 
-
+    public void networkPositionListen()
+    {
+        if (positionQueue.Count > 0)
+        {
+            controller.serverControl(positionQueue.Pop());
+            positionQueue = new Stack<Payload>();
+        }
+    }
 }

@@ -26,7 +26,6 @@ public class NodeDisplay : MonoBehaviour, Displayable
     {
        
         string disp = node.gameObject.name + " \n";
-        disp += "Owner: " + (node.owner == null ? "None" : node.owner.GetTeam()) + "\n";
         disp += StringUtils.printDictionary(node.transferCenter.resources);
 
         //if (node.conversion != 0 && node.conversion != 100 && nodeDetector.group != null)

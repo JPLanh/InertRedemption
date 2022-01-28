@@ -79,42 +79,42 @@ public class NetworkListenerInterpolation : MonoBehaviour
             //        }
             //    }
 
-            if (NetworkMain.serverResponse.Count > 0)
-            {
-                Dictionary<string, string> getPayload = NetworkMain.serverResponse.Dequeue();
-                NetworkMain.serverResponse = new Queue<Dictionary<string, string>> ();
-                Dictionary<string, string> payload = new Dictionary<string, string>();
-                print(StringUtils.convertPayloadToJson(payload));
-                GameObject findGO = GameObject.Find(getPayload["Username"]);
-                switch (getPayload["Action"])
-                {
-                    case "Fire1":
-                        findGO.GetComponent<PlayerController>().fireOne();
-                        break;
-                    case "Fire2":
-                        //findGO.GetComponent<PlayerController>().aim(false);
-                        break;
-                    case "Fire1Up":
-                        findGO.GetComponent<PlayerController>().singleHandUse = false;
-                        break;
-                    case "Reload":
-                        findGO.GetComponent<PlayerController>().reload(false);
-                        break;
-                    case "Swap holding":
-                        findGO.GetComponent<PlayerController>().swapGun(false);
-                        break;
-                    case "Swap Gun":
-                        findGO.GetComponent<PlayerController>().swapGun(false);
-                        break;
-                    case "Menu":
-                        findGO.GetComponent<PlayerController>().accessMenu(false);
-                        break;
-                    case "Build":
-                        findGO.GetComponent<PlayerController>().buildModeSwitch();
-                        break;
-                }
+        //    if (NetworkMain.serverResponse.Count > 0)
+        //    {
+        //        Dictionary<string, string> getPayload = NetworkMain.serverResponse.Dequeue();
+        //        NetworkMain.serverResponse = new Queue<Dictionary<string, string>> ();
+        //        Dictionary<string, string> payload = new Dictionary<string, string>();
+        //        print(StringUtils.convertPayloadToJson(payload));
+        //        GameObject findGO = GameObject.Find(getPayload["Username"]);
+        //        switch (getPayload["Action"])
+        //        {
+        //            case "Fire1":
+        //                findGO.GetComponent<PlayerController>().fireOne();
+        //                break;
+        //            case "Fire2":
+        //                //findGO.GetComponent<PlayerController>().aim(false);
+        //                break;
+        //            case "Fire1Up":
+        //                findGO.GetComponent<PlayerController>().singleHandUse = false;
+        //                break;
+        //            case "Reload":
+        //                findGO.GetComponent<PlayerController>().reload(false);
+        //                break;
+        //            case "Swap holding":
+        //                findGO.GetComponent<PlayerController>().swapGun(false);
+        //                break;
+        //            case "Swap Gun":
+        //                findGO.GetComponent<PlayerController>().swapGun(false);
+        //                break;
+        //            case "Menu":
+        //                findGO.GetComponent<PlayerController>().accessMenu(false);
+        //                break;
+        //            case "Build":
+        //                findGO.GetComponent<PlayerController>().buildModeSwitch();
+        //                break;
+        //        }
 
-            }
+        //    }
         }
 
         //Dictionary<string, string> getPayload = NetworkMain.serverRecResponse.Dequeue();
