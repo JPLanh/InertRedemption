@@ -76,6 +76,7 @@ module.exports = async function(socket){
 					getSocket.emit("Action", payload);
 					break;
 				case "Join":
+					getSocket.join(param['lobbyID']);
 					await lobby.findOne({"lobbyID": param['lobbyID']}).exec()
 					.then(async (getLobby) => {
 						let survivorTeam = player.countDocuments({"lobbyID": getLobby['lobbyID'], "Team": "Survivor"})
@@ -278,11 +279,92 @@ module.exports = async function(socket){
 			}*/
 		});
 
+		getSocket.on("Reply", async (payload) => {
+			let param = JSON.parse(payload);
+			let data = JSON.parse(param["data"]);
+			console.log(param);
+			socket.to(param["target"]).emit('Reply', payload.replace(/"/g, "`"))
+
+		})
+
+		getSocket.on("Change Room", async (payload) => {
+			let param = JSON.parse(payload);
+			let data = JSON.parse(param["data"]);
+			getSocket.join(data["room"]);
+		})
+
 		getSocket.on("Broadcast", async (payload) => {
 			let param = JSON.parse(payload);
-			console.log(param);
-			socket.emit('Broadcast', payload.replace(/"/g, "`"));
+//			console.log(param);
+			socket.in(param['lobbyID']).emit('Broadcast', payload.replace(/"/g, "`"));
 		});
+
+		getSocket.on("Inquire", async (payload) => {
+			let param = JSON.parse(payload);
+			let data = JSON.parse(param["data"])
+			switch(data["Inquire"]){
+				case "Get Resources":
+					resource.find({}).exec()
+					.then(async (getResources) => {
+						param['data'] = getResources
+						getSocket.emit("Inquire", JSON.stringify(param));
+					})
+
+			}
+		})
+
+		getSocket.on("Server", async (payload) => {
+			let param = JSON.parse(payload);
+			let data = JSON.parse(param["data"])
+//			console.log(param);
+
+			let payload_template = {};
+			payload_template["source"] = "";
+			payload_template["data"] = "";
+			payload_template["target"] = "";
+
+
+			for(let resourceID = 0; resourceID < 2; resourceID++){
+				let resourcePayloads = {};
+				resourcePayloads["Type"] = (resourceID == 0) ? "Tree" : "Stone";
+
+				for(let counter = 0; counter < 25; counter++){
+					resourcePayloads["xPos"] = Math.floor(Math.random() * 1001) - 500
+					resourcePayloads["yPos"] = Math.floor(Math.random() * 1001) - 500				
+					resourcePayloads["UID"] = randomIDGen(12);
+					resourcePayloads["Action"] = "Spawn Resource";
+					payload_template["data"] = resourcePayloads;
+					socket.in(data['lobbyID']).emit('Loading', JSON.stringify(payload_template).replace(/"/g, "`"));
+				}
+			}
+
+			let payloadData = {};
+			payloadData["Action"] = "Resource Loaded";
+			payload_template["data"] = payloadData;
+			socket.in(data['lobbyID']).emit('Loading', JSON.stringify(payload_template).replace(/"/g, "`"));
+
+
+// 			switch(data["Action"]){
+// 				case "Begin":
+// 					player.find({"lobbyID": data['lobbyID']}).exec()
+// 					.then(async (getPlayers) => {
+// 						let playerIndex = Math.floor(Math.random() * getPlayers.length);
+// 						getPlayers.forEach((it_player) => {
+// 							let new_payload = {}
+// 							new_payload["Action"] = "Set Role";
+// 							if (playerIndex == 0) new_payload["Team"] = "Virus";
+// 							else new_payload["Team"] = "Survivor";
+// 							payload_template["data"] = new_payload
+// 							console.log(it_player);
+// 							console.log(payload_template);
+// //							socket.in(data['lobbyID']).emit('Loading', JSON.stringify(payload_template).replace(/"/g, "`"));
+// 							socket.to(it_player["UserID"]).emit('Loading', JSON.stringify(payload_template).replace(/"/g, "`"))
+// 							playerIndex -= 1;
+// 						})
+// 					})
+// 					break;
+// 			}
+		})
 
 		getSocket.on("Self", async (payload) => {
 			let param = JSON.parse(payload);
