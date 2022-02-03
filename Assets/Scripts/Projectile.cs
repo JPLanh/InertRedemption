@@ -68,7 +68,7 @@ public class Projectile : MonoBehaviour
         if (target != null && (other.gameObject.layer != LayerMask.NameToLayer("LivingBeingsBlocker")))
         {
 
-            target.damage(true, damage, attacker);
+            target.isDamage(true, damage, attacker);
 //            if (isPlayer != null) NetworkMain.socket.Emit("Player", JsonConvert.SerializeObject(payload));
         }
         if (!other.transform.GetComponent<Projectile>() &&

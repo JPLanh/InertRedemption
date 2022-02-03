@@ -22,15 +22,12 @@ public class EntityManager : MonoBehaviour
 
     public Survivors survivorPlaceHolder;
 
-    //public static Dictionary<string, PlayerController> redTeam = new Dictionary<string, PlayerController>();
-    //    public static Dictionary<string, PlayerController> blueTeam = new Dictionary<string, PlayerController>();
-
     public static Dictionary<string, PlayerController> survivors = new Dictionary<string, PlayerController>();
     public static Dictionary<string, VirusController> virus = new Dictionary<string, VirusController>();
     public static Dictionary<string, IPlayerController> players = new Dictionary<string, IPlayerController>();
-
-    //GameObject blueBase;
-    //GameObject redBase;
+    public static Dictionary<string, ResourceEntity> resourcesLoad = new Dictionary<string, ResourceEntity>();
+    public static Dictionary<string, Resource> resources = new Dictionary<string, Resource>();
+    public static Dictionary<string, Data> loot = new Dictionary<string, Data>();
 
     // Start is called before the first frame update
     void Start()
@@ -45,7 +42,7 @@ public class EntityManager : MonoBehaviour
             localPlayer["Team"] = NetworkMain.Team;
             localPlayer["health"] = "100";
             spawnPlayer(localPlayer);
-            newHost();
+            //newHost();
         } else
         {
             Dictionary<string, string> localPlayer = StringUtils.getPayload();
@@ -56,31 +53,25 @@ public class EntityManager : MonoBehaviour
             localPlayer["health"] = "100";
             localPlayer["Action"] = "Join Game";
             NetworkMain.broadcastAction(localPlayer);
- //           NetworkMain.getUpdates(localPlayer);
+            loadAllResources();
         }
-
-  //      spawnTestDummies("Test Dummy 1");
-        //spawnTestDummies("Test Dummy 2");
-        //spawnTestDummies("Test Dummy 3");
-
-//        modifyTestDummy("Test Dummy 1");
     }
 
-    private void modifyTestDummy(string in_name)
-    {
-        survivors[in_name].transform.SetParent(survivorPlaceHolder.survivorList.transform);
-        survivors[in_name].transform.localPosition = new Vector3(0f, 0f, 0f);
-    }
+    //private void modifyTestDummy(string in_name)
+    //{
+    //    survivors[in_name].transform.SetParent(survivorPlaceHolder.survivorList.transform);
+    //    survivors[in_name].transform.localPosition = new Vector3(0f, 0f, 0f);
+    //}
 
-    private void spawnTestDummies(string in_name)
-    {
-        Dictionary<string, string> dummy = new Dictionary<string, string>();
-        dummy["name"] = in_name;
-        dummy["UserID"] = StringUtils.randomStringGen(5);
-        dummy["Team"] = "Survivor";
-        dummy["health"] = "100";
-        spawnPlayer(dummy);
-    }
+    //private void spawnTestDummies(string in_name)
+    //{
+    //    Dictionary<string, string> dummy = new Dictionary<string, string>();
+    //    dummy["name"] = in_name;
+    //    dummy["UserID"] = StringUtils.randomStringGen(5);
+    //    dummy["Team"] = "Survivor";
+    //    dummy["health"] = "100";
+    //    spawnPlayer(dummy);
+    //}
 
     // Update is called once per frame
     void Update()
@@ -91,100 +82,100 @@ public class EntityManager : MonoBehaviour
         }
     }
 
-    public void createResource(Dictionary<string, string> getPayload)
-    {
-        GameObject obj = Instantiate(Resources.Load<GameObject>(getPayload["resource"]), StringUtils.getVectorFromJson(getPayload, "Pos"), Quaternion.Euler(float.Parse(getPayload["xRot"]), 0, 0));
-        obj.GetComponent<Resource>().amount = StringUtils.convertToInt(getPayload["amount"]);
-        if (!NetworkMain.local)
-        {
-            obj.GetComponent<Resource>().UID = getPayload["UID"];
-            obj.name = getPayload["UID"];
-            obj.GetComponent<Resource>().durability = StringUtils.convertToFloat(getPayload["durability"]);
-        }
-        obj.transform.SetParent(resourceList.transform);
-    }
+    //public void createResource(Dictionary<string, string> getPayload)
+    //{
+    //    GameObject obj = Instantiate(Resources.Load<GameObject>(getPayload["resource"]), StringUtils.getVectorFromJson(getPayload, "Pos"), Quaternion.Euler(float.Parse(getPayload["xRot"]), 0, 0));
+    //    obj.GetComponent<Resource>().amount = StringUtils.convertToInt(getPayload["amount"]);
+    //    if (!NetworkMain.local)
+    //    {
+    //        obj.GetComponent<Resource>().UID = getPayload["UID"];
+    //        obj.name = getPayload["UID"];
+    //        obj.GetComponent<Resource>().durability = StringUtils.convertToFloat(getPayload["durability"]);
+    //    }
+    //    obj.transform.SetParent(resourceList.transform);
+    //}
 
-    public void newHost()
-    {
-        if (NetworkMain.isHost || NetworkMain.local)
-        {
-            if (NetworkMain.local) resourceCounter = 75;
-            nodeCounter = Random.Range(5, 10);
-//            resourceCounter = Random.Range(30, 100);
-            for (int i = resourceList.transform.childCount; i < resourceCounter; i++)
-            {
-                var position = new Vector3(Random.Range(-400f, 400f), 200, Random.Range(-400f, 400f));
-                if (!(position.x > 250f && position.z > 250f) && !(position.x < -250f && position.z < -250f) && GetClosestResource(position, "Resource") > 5)
-                {
-                    spawnResources(position);
-                }
-            }
-            StartCoroutine(objectSpawner());
-        }
-    }
+//    public void newHost()
+//    {
+//        if (NetworkMain.isHost || NetworkMain.local)
+//        {
+//            if (NetworkMain.local) resourceCounter = 75;
+//            nodeCounter = Random.Range(5, 10);
+////            resourceCounter = Random.Range(30, 100);
+//            for (int i = resourceList.transform.childCount; i < resourceCounter; i++)
+//            {
+//                var position = new Vector3(Random.Range(-400f, 400f), 200, Random.Range(-400f, 400f));
+//                if (!(position.x > 250f && position.z > 250f) && !(position.x < -250f && position.z < -250f) && GetClosestResource(position, "Resource") > 5)
+//                {
+//                    //spawnResources(position);
+//                }
+//            }
+//            StartCoroutine(objectSpawner());
+//        }
+//    }
 
-    IEnumerator objectSpawner()
-    {
-        print("Starting as host");
-        while (true)
-        {
-            if (nodeList.transform.childCount < nodeCounter)
-            {
-                var position = new Vector3(Random.Range(-500f, 500f), 200, Random.Range(-500f, 500f));
-                var dis = GetClosestResource(position, "Node");
-                if (!(position.x > 250f && position.z > 250f) && !(position.x < -250f && position.z < -250f) && dis > 25000 && dis != Mathf.Infinity)
-                {
-                    Dictionary<string, string> payload = StringUtils.getPositionAndRotation(position, Quaternion.Euler(0, Random.Range(0.0f, 360.0f), 0));
-                    spawnNode(payload);
-                }
-            }
-            if (resourceList.transform.childCount < resourceCounter)
-            {
-                var position = new Vector3(Random.Range(-500f, 500f), 200, Random.Range(-500f, 500f));
-                    spawnResources(position);
-                //if (!(position.x > 250f && position.z > 250f) && !(position.x < -250f && position.z < -250f) && GetClosestResource(position, "Resource") > 150)
-                //{
-                //}
-            }
-            //if (npcList.transform.childCount < npcCounter)
-            //{
-            //    var position = new Vector3(Random.Range(-500f, 500f), 200, Random.Range(-500f, 500f));
-            //        spawnNPC(position);
-            //    //if (!(position.x > 250f && position.z > 250f) && !(position.x < -250f && position.z < -250f) && GetClosestResource(position, "Resource") > 150)
-            //    //{
-            //    //    //spawnNPC(position, redBase, 0, 1);
-            //    //    //spawnNPC(position, redBase, 0, 2);
-            //    //    //spawnNPC(position, redBase, 0, 2);
-            //    //}
-            //}
-            yield return new WaitForSeconds(5);
-        }
+//    IEnumerator objectSpawner()
+//    {
+//        print("Starting as host");
+//        while (true)
+//        {
+//            if (nodeList.transform.childCount < nodeCounter)
+//            {
+//                var position = new Vector3(Random.Range(-500f, 500f), 200, Random.Range(-500f, 500f));
+//                var dis = GetClosestResource(position, "Node");
+//                if (!(position.x > 250f && position.z > 250f) && !(position.x < -250f && position.z < -250f) && dis > 25000 && dis != Mathf.Infinity)
+//                {
+//                    Dictionary<string, string> payload = StringUtils.getPositionAndRotation(position, Quaternion.Euler(0, Random.Range(0.0f, 360.0f), 0));
+//                    spawnNode(payload);
+//                }
+//            }
+//            if (resourceList.transform.childCount < resourceCounter)
+//            {
+//                var position = new Vector3(Random.Range(-500f, 500f), 200, Random.Range(-500f, 500f));
+//            //        spawnResources(position);
+//                //if (!(position.x > 250f && position.z > 250f) && !(position.x < -250f && position.z < -250f) && GetClosestResource(position, "Resource") > 150)
+//                //{
+//                //}
+//            }
+//            //if (npcList.transform.childCount < npcCounter)
+//            //{
+//            //    var position = new Vector3(Random.Range(-500f, 500f), 200, Random.Range(-500f, 500f));
+//            //        spawnNPC(position);
+//            //    //if (!(position.x > 250f && position.z > 250f) && !(position.x < -250f && position.z < -250f) && GetClosestResource(position, "Resource") > 150)
+//            //    //{
+//            //    //    //spawnNPC(position, redBase, 0, 1);
+//            //    //    //spawnNPC(position, redBase, 0, 2);
+//            //    //    //spawnNPC(position, redBase, 0, 2);
+//            //    //}
+//            //}
+//            yield return new WaitForSeconds(5);
+//        }
 
-    }
+//    }
 
-    public static float GetClosestResource(Vector3 getPosition, string getTag)
-    {
-        GameObject[] gos = GameObject.FindGameObjectsWithTag(getTag);
-        GameObject closest = null;
-        float distance = Mathf.Infinity;
-        Vector3 position = getPosition;
-        foreach (GameObject go in gos)
-        {
-            Vector3 normalized = new Vector3(go.transform.position.x, 200, go.transform.position.z);
-            Vector3 diff = normalized - position;
-            float curDistance = diff.sqrMagnitude;
-            if (curDistance < distance)
-            {
-                closest = go;
-                distance = curDistance;
-            }
-        }
-        if (gos.Length == 0)
-        {
-            return 30000;
-        }
-        return distance;
-    }
+    //public static float GetClosestResource(Vector3 getPosition, string getTag)
+    //{
+    //    GameObject[] gos = GameObject.FindGameObjectsWithTag(getTag);
+    //    GameObject closest = null;
+    //    float distance = Mathf.Infinity;
+    //    Vector3 position = getPosition;
+    //    foreach (GameObject go in gos)
+    //    {
+    //        Vector3 normalized = new Vector3(go.transform.position.x, 200, go.transform.position.z);
+    //        Vector3 diff = normalized - position;
+    //        float curDistance = diff.sqrMagnitude;
+    //        if (curDistance < distance)
+    //        {
+    //            closest = go;
+    //            distance = curDistance;
+    //        }
+    //    }
+    //    if (gos.Length == 0)
+    //    {
+    //        return 30000;
+    //    }
+    //    return distance;
+    //}
 
 
     public PlayerController spawnPlayer(Dictionary<string, string> payload)
@@ -196,19 +187,19 @@ public class EntityManager : MonoBehaviour
             out_playerController.survivorsGO = survivorPlaceHolder;
             out_playerController.networkListener = new PlayerNetworkListener(payload["Username"]);
             out_playerController.networkListener.controller = out_playerController;
-            NetworkMain.payloadStack.Add(payload["Username"], out_playerController.networkListener);
+            NetworkMain.payloadStack.Add(payload["UserID"], out_playerController.networkListener);
             out_playerController.em = this;
-            survivors.Add(payload["Username"], out_playerController);
-            out_playerController.emitSound("Heartbeat", true);
-            players.Add(payload["Username"], out_playerController);
+            survivors.Add(payload["UserID"], out_playerController);
+            out_playerController.emitSound("Heartbeat", false);
+            players.Add(payload["UserID"], out_playerController);
             out_playerController.livingBeing.health = StringUtils.convertToFloat(payload["health"]);
             if (payload["Username"] == NetworkMain.Username)
             {
                 lv_canvas.lead.transform.position = out_playerController.transform.position;
                 out_playerController.movementController.lead = lv_canvas.lead;
                 out_playerController.characterController = lv_canvas.lead.GetComponent<CharacterController>();
-                if (payload.TryGetValue("Host", out string isaHost))
-                    NetworkMain.isHost = bool.Parse(isaHost);
+                //if (payload.TryGetValue("Host", out string isaHost))
+                //    NetworkMain.isHost = bool.Parse(isaHost);
                 out_playerController.setActivePlayer(payload["UserID"], payload["Username"], lv_canvas);
             }
             else out_playerController.setOtherPlayer(payload["UserID"], payload["Username"]);
@@ -216,12 +207,12 @@ public class EntityManager : MonoBehaviour
         if (out_virusController != null)
         {
             out_virusController.livingBeing.health = StringUtils.convertToFloat(payload["health"]);
-            virus.Add(payload["Username"], out_virusController);
-            players.Add(payload["Username"], out_virusController);
+            virus.Add(payload["UserID"], out_virusController);
+            players.Add(payload["UserID"], out_virusController);
             out_virusController.networkListener = new PlayerNetworkListener(payload["Username"]);
             out_virusController.networkListener.controller = out_virusController;
             out_virusController.virusList = virusList;
-            NetworkMain.payloadStack.Add(payload["Username"], out_virusController.networkListener);
+            NetworkMain.payloadStack.Add(payload["UserID"], out_virusController.networkListener);
             out_virusController.em = this;
             if (payload["Username"] == NetworkMain.Username)
             {
@@ -229,8 +220,8 @@ public class EntityManager : MonoBehaviour
                 out_virusController.movementController.lead = lv_canvas.lead;
                 out_virusController.characterController = lv_canvas.lead.GetComponent<CharacterController>();
 
-                if (payload.TryGetValue("Host", out string isaHost))
-                    NetworkMain.isHost = bool.Parse(isaHost);
+                //if (payload.TryGetValue("Host", out string isaHost))
+                //    NetworkMain.isHost = bool.Parse(isaHost);
                 out_virusController.setActivePlayer(payload["UserID"], payload["Username"], lv_canvas);
             }
             else out_virusController.setOtherPlayer(payload["UserID"], payload["Username"]);
@@ -284,32 +275,49 @@ public class EntityManager : MonoBehaviour
         return payload;
     }
 
+    //
+    //public void spawnNode(Dictionary<string, string> payload)
+    //{
+    //    GameObject newNode = Instantiate(Resources.Load<GameObject>("Node"), StringUtils.getVectorFromJson(payload, "Pos"), StringUtils.getQuaternionFromJson(payload, "Rot"));
+    //    newNode.name = "Node";
+    //    newNode.transform.GetComponent<Node>().energy = Random.Range(100, 500);
+    //    newNode.transform.SetParent(nodeList.transform);
+    //}
 
-    public void spawnNode(Dictionary<string, string> payload)
+    //public void spawnResources(Vector3 getPosition)
+    //{
+    //    GameObject newNode = Instantiate(Resources.Load<GameObject>("Resource Spawner"), getPosition, Quaternion.Euler(0, 0, 0));
+    //    newNode.name = "Resource";
+    //    newNode.transform.GetComponent<ResourceSpawner>().resourceNum = Random.Range(0, 2);
+    //    newNode.transform.SetParent(resourceList.transform);
+    //}
+
+    public void loadResources(ResourceEntity in_resource)
     {
-        GameObject newNode = Instantiate(Resources.Load<GameObject>("Node"), StringUtils.getVectorFromJson(payload, "Pos"), StringUtils.getQuaternionFromJson(payload, "Rot"));
-        newNode.name = "Node";
-        newNode.transform.GetComponent<Node>().energy = Random.Range(100, 500);
-        newNode.transform.SetParent(nodeList.transform);
+        GameObject newNode = Instantiate(Resources.Load<GameObject>(in_resource.type), resourceList.transform);
+        newNode.TryGetComponent<Resource>(out Resource out_resource);
+        out_resource.UID = in_resource.UID;
+        out_resource.resource = in_resource.type;
+        resources.Add(in_resource.UID, out_resource);
+        newNode.name = in_resource.UID;
+        newNode.transform.localPosition = new Vector3(in_resource.xPos, 0, in_resource.yPos);
     }
 
+    //public void spawnItem(Dictionary<string, string> payload)
+    //{
+    //    GameObject GO = Instantiate(Resources.Load<GameObject>("Resource Loot"), StringUtils.getVectorFromJson(payload, "Pos"), Quaternion.Euler(float.Parse(payload["xRot"]), 0, 0));
+    //    print(StringUtils.convertPayloadToJson(payload));
+    //    GO.transform.GetComponent<Data>().resourceName = payload["resource"];
+    //    GO.name = payload["UID"];
+    //    GO.transform.GetComponent<Data>().UID = payload["UID"];
+    //    GO.transform.SetParent(itemList.transform);
+    //}
 
-    public void spawnResources(Vector3 getPosition)
+    private void loadAllResources()
     {
-        GameObject newNode = Instantiate(Resources.Load<GameObject>("Resource Spawner"), getPosition, Quaternion.Euler(0, 0, 0));
-        newNode.name = "Resource";
-        newNode.transform.GetComponent<ResourceSpawner>().resourceNum = Random.Range(0, 2);
-        newNode.transform.SetParent(resourceList.transform);
-    }
-
-    public void spawnItem(Dictionary<string, string> payload)
-    {
-        GameObject GO = Instantiate(Resources.Load<GameObject>("Resource Loot"), StringUtils.getVectorFromJson(payload, "Pos"), Quaternion.Euler(float.Parse(payload["xRot"]), 0, 0));
-        print(StringUtils.convertPayloadToJson(payload));
-        GO.transform.GetComponent<Data>().resourceName = payload["resource"];
-        GO.name = payload["UID"];
-        GO.transform.GetComponent<Data>().UID = payload["UID"];
-        GO.transform.SetParent(itemList.transform);
-
+        foreach(KeyValuePair<string, ResourceEntity> it_resource in resourcesLoad)
+        {
+            loadResources(it_resource.Value);
+        }
     }
 }

@@ -34,19 +34,21 @@ public class SendButton : MonoBehaviour
         Dictionary<string, string> payload = StringUtils.getPayload();
         payload["Message"] = chatMessage.text;
         payload["Username"] = NetworkMain.Username;
-        if (NetworkMain.clientType == "Client")
-        {
-            payload["Mode"] = "Forward";
-            payload["Action"] = "Send Message";
-            NetworkMain.blindSend(payload);
-        }
-        else
-        {
-            payload["Mode"] = "Action";
-            chatBox.text += NetworkMain.Username + ": " + chatMessage.text +"\n";
-            payload["Action"] = "Populate Message";
-        NetworkMain.broadcastClients(payload);
-        }
+        payload["Action"] = "Message";
+        NetworkMain.broadcastAction(payload);
+        //if (NetworkMain.clientType == "Client")
+        //{
+        //    payload["Mode"] = "Forward";
+        //    payload["Action"] = "Send Message";
+        //    NetworkMain.blindSend(payload);
+        //}
+        //else
+        //{
+        //    payload["Mode"] = "Action";
+        //    chatBox.text += NetworkMain.Username + ": " + chatMessage.text +"\n";
+        //    payload["Action"] = "Populate Message";
+        //NetworkMain.broadcastClients(payload);
+        //}
 
         //        NetworkMain.socket.Emit("Message", StringUtils.convertPayloadToJson(payload));
         chatField.text = "";

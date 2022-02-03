@@ -77,7 +77,7 @@ public class LivingBeing : MonoBehaviour, Damagable
             legsMesh.GetComponent<Renderer>().materials[1].SetColor("_EmissionColor", getColor);
     }
 
-    public GameObject damage(bool network, float getValue, GameObject attacker)
+    public GameObject isDamage(bool network, float getValue, GameObject attacker)
     {
         if (NetworkMain.local)
         {
@@ -97,7 +97,7 @@ public class LivingBeing : MonoBehaviour, Damagable
                 payload["Target"] = gameObject.name;
                 payload["damage"] = StringUtils.convertFloatToString(getValue);
                 payload["Action"] = "Damage Living";
-                NetworkMain.messageServer(payload);
+                //NetworkMain.messageServer(payload);
             }
         }
 

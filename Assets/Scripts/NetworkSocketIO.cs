@@ -24,11 +24,6 @@ public class NetworkSocketIO : MonoBehaviour
         }
     }
 
-    void FixedUpdate()
-    {
-
-    }
-
     void OnDestroy()
     {
         if (!NetworkMain.local)
@@ -48,28 +43,39 @@ public class NetworkSocketIO : MonoBehaviour
 
                     switch (out_action)
                     {
+                        case "Pickup Item":
+                            if (EntityManager.loot.ContainsKey(getPayload.data["UID"]))
+                            {
+                                EntityManager.loot[getPayload.data["UID"]].pickupItem();                            
+                            }
+                            break;
+                        case "Damage Resource":
+                            if (EntityManager.resources.ContainsKey(getPayload.data["UID"]))
+                            {
+                                EntityManager.resources[getPayload.data["UID"]].damage(float.Parse(getPayload.data["Damage"]));
+                            }
+                            break;
+                        case "Join Acknowledge":
+                            if (!EntityManager.players.ContainsKey(getPayload.source))
+                            {
+ //                               Debug.Log("Does not exists");
+                                em.spawnPlayer(getPayload.data);
+                            }
+                            break;
                         case "Join Game":
-                            Debug.Log(getPayload.source + " is joining");
+//                            Debug.Log(getPayload.source + " is joining");
                             if (!EntityManager.players.ContainsKey(getPayload.source))
                             {
                                 Debug.Log("Does not exists");
                                 em.spawnPlayer(getPayload.data);
                                 NetworkMain.isPlaying = true;
-                                //NetworkMain.LobbyID = getPayload["lobbyID"];
-                                //NetworkMain.UserID = getPayload["UserID"];
-                                //currentTime.setTime(StringUtils.convertToFloat(getPayload["Time"]));
-                                //em.resourceCounter = StringUtils.convertToInt(getPayload["resourceLimit"]);
-                                //payload["lobbyID"] = NetworkMain.LobbyID;
-                                //payload["Action"] = "Server Update";
-                                //NetworkMain.getUpdates(payload);
-                                    Dictionary<string, string> payload = new Dictionary<string, string>();
-                                    payload.Add("Username", NetworkMain.Username);
-                                    payload.Add("UserID", NetworkMain.UserID);
-                                    payload.Add("Team", NetworkMain.Team);
-                                    payload.Add("health", EntityManager.players[NetworkMain.Username].getHealth().ToString());
-                                    payload.Add("Action", "Join Game");
-                                    NetworkMain.broadcastAction(payload, getPayload.source);
-                                    Debug.Log("Synchronizing");
+                                Dictionary<string, string> payload = new Dictionary<string, string>();
+                                payload.Add("Username", NetworkMain.Username);
+                                payload.Add("UserID", NetworkMain.UserID);
+                                payload.Add("Team", NetworkMain.Team);
+                                payload.Add("health", EntityManager.players[NetworkMain.UserID].getHealth().ToString());
+                                payload.Add("Action", "Join Acknowledge");
+                                NetworkMain.broadcastAction(payload, getPayload.source);
                             } else
                             {
                                 Debug.Log("Exists");
@@ -232,69 +238,69 @@ public class NetworkSocketIO : MonoBehaviour
 
             }
 
-            if (NetworkMain.updateResponseItnterpolation.Count > 0)
-            {
-                string message = NetworkMain.updateResponseItnterpolation.Pop();
-                NetworkMain.updateResponseItnterpolation = new Stack<string>();
-                //Dictionary<string, string> payload = JsonConvert.DeserializeObject<Dictionary<string, string>>(message);
-                List<Dictionary<string, string>> massPayload = JsonConvert.DeserializeObject<List<Dictionary<string, string>>>(message);
+            //if (NetworkMain.updateResponseItnterpolation.Count > 0)
+            //{
+            //    string message = NetworkMain.updateResponseItnterpolation.Pop();
+            //    NetworkMain.updateResponseItnterpolation = new Stack<string>();
+            //    //Dictionary<string, string> payload = JsonConvert.DeserializeObject<Dictionary<string, string>>(message);
+            //    List<Dictionary<string, string>> massPayload = JsonConvert.DeserializeObject<List<Dictionary<string, string>>>(message);
 
-                foreach (Dictionary<string, string> payload in massPayload)
-                {
-                    //if (payload.ContainsKey("Minion"))
-                    //{
-                    //    GameObject getMinion = GameObject.Find(payload["Minion"]);
-                    //    if (getMinion == null)
-                    //    {
-                    //        GameObject.Find(payload["Team"] + " Base").transform.GetChild(3).transform.GetComponent<PassiveScript>().spawnMinionSpecific(payload);
+            //    foreach (Dictionary<string, string> payload in massPayload)
+            //    {
+            //        //if (payload.ContainsKey("Minion"))
+            //        //{
+            //        //    GameObject getMinion = GameObject.Find(payload["Minion"]);
+            //        //    if (getMinion == null)
+            //        //    {
+            //        //        GameObject.Find(payload["Team"] + " Base").transform.GetChild(3).transform.GetComponent<PassiveScript>().spawnMinionSpecific(payload);
 
-                    //    }
-                    //    else
-                    //    {
-                    //        GameObject.Find(payload["Minion"]).GetComponent<Entity>().serverControl(payload);
-                    //    }
-                    //}
-                    //else
-                    //{
-                    //GameObject getPlayer = GameObject.Find(payload["name"]);
-                    Debug.Log(StringUtils.convertPayloadToJson(payload));
-                    EntityManager.players.TryGetValue(payload["name"], out IPlayerController getPlayer);
-                    //if (payload["name"] != NetworkMain.Username)
-                    //{
-                    //    if (getPlayer == null)
-                    //    {
-                    //        if (payload["State"] == "Alive")
-                    //        {
-                    //            em.spawnPlayer(payload);
-                    //        }
-                    //    }
-                    //    else
-                    //    {
-                    //        if (payload["State"] == "Alive")
-                    //            getPlayer.serverControl(payload);
-                    //        else if (payload["State"] == "Dead")
-                    //            Destroy(getPlayer.getGameObject());
-                    //    }
-                    //}
-                    //else
-                    //{
-                    //    if (getPlayer != null)
-                    //    {
-                    //        if (!getPlayer.isMovable())
-                    //        {
-                    //            getPlayer.serverControl(payload);
-                    //        }
-                    //        if (NetworkMain.isHost != bool.Parse(payload["host"]))
-                    //        {
-                    //            NetworkMain.isHost = bool.Parse(payload["host"]);
-                    //            if (bool.Parse(payload["host"]))
-                    //            {
-                    //                em.newHost();
-                    //            }
-                    //        }
-                    //    }
-                    //}
-                }
-            }
+            //        //    }
+            //        //    else
+            //        //    {
+            //        //        GameObject.Find(payload["Minion"]).GetComponent<Entity>().serverControl(payload);
+            //        //    }
+            //        //}
+            //        //else
+            //        //{
+            //        //GameObject getPlayer = GameObject.Find(payload["name"]);
+            //        Debug.Log(StringUtils.convertPayloadToJson(payload));
+            //        EntityManager.players.TryGetValue(payload["name"], out IPlayerController getPlayer);
+            //        //if (payload["name"] != NetworkMain.Username)
+            //        //{
+            //        //    if (getPlayer == null)
+            //        //    {
+            //        //        if (payload["State"] == "Alive")
+            //        //        {
+            //        //            em.spawnPlayer(payload);
+            //        //        }
+            //        //    }
+            //        //    else
+            //        //    {
+            //        //        if (payload["State"] == "Alive")
+            //        //            getPlayer.serverControl(payload);
+            //        //        else if (payload["State"] == "Dead")
+            //        //            Destroy(getPlayer.getGameObject());
+            //        //    }
+            //        //}
+            //        //else
+            //        //{
+            //        //    if (getPlayer != null)
+            //        //    {
+            //        //        if (!getPlayer.isMovable())
+            //        //        {
+            //        //            getPlayer.serverControl(payload);
+            //        //        }
+            //        //        if (NetworkMain.isHost != bool.Parse(payload["host"]))
+            //        //        {
+            //        //            NetworkMain.isHost = bool.Parse(payload["host"]);
+            //        //            if (bool.Parse(payload["host"]))
+            //        //            {
+            //        //                em.newHost();
+            //        //            }
+            //        //        }
+            //        //    }
+            //        //}
+            //    }
+            //}
         }
     }

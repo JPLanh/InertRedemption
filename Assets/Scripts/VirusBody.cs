@@ -30,7 +30,7 @@ public class VirusBody : MonoBehaviour, Damagable
 
     }
 
-    public GameObject damage(bool network, float getValue, GameObject attacker)
+    public GameObject isDamage(bool network, float getValue, GameObject attacker)
     {
         if (NetworkMain.local)
         {
@@ -50,7 +50,7 @@ public class VirusBody : MonoBehaviour, Damagable
                 payload["Target"] = gameObject.name;
                 payload["damage"] = StringUtils.convertFloatToString(getValue);
                 payload["Action"] = "Damage Living";
-                NetworkMain.messageServer(payload);
+                //NetworkMain.messageServer(payload);
             }
         }
 

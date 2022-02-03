@@ -29,15 +29,15 @@ public class LoginListener : MonoBehaviour
         //}
     }
 
-    public void login()
-    {
-        NetworkMain.serverIP = IP.text;
-        NetworkMain.senderInit();
-        Dictionary<string, string> payload = new Dictionary<string, string>();
-        payload["Action"] = "Join";
-        NetworkMain.sendString(payload);
-//        NetworkMain.joinGame(username.text, "123");
-    }
+//    public void login()
+//    {
+//        NetworkMain.serverIP = IP.text;
+//        NetworkMain.senderInit();
+//        Dictionary<string, string> payload = new Dictionary<string, string>();
+//        payload["Action"] = "Join";
+//        NetworkMain.sendString(payload);
+////        NetworkMain.joinGame(username.text, "123");
+//    }
 
     private void listenHandler()
     {
@@ -49,7 +49,7 @@ public class LoginListener : MonoBehaviour
                 {
                     case "Enter Game":
                         NetworkMain.Team = payload["Team"];
-                        SceneManager.LoadScene("mainScene");
+                        SceneManager.LoadScene("Lobby");
                         break;
                     case "Welcome":
                         NetworkMain.Username = payload["Username"];
@@ -87,4 +87,9 @@ public class LoginListener : MonoBehaviour
             }
         }
     }
+}
+
+public class ResourceWrapper
+{
+    public List<Resource> Resources;
 }

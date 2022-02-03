@@ -43,7 +43,7 @@ public class Building : MonoBehaviour, Damagable, Displayable, IBuilding, IPubli
         poweredBuildings = new List<IBuilding>();
     }
 
-    public GameObject damage(bool network, float getValue, GameObject attacker)
+    public GameObject isDamage(bool network, float getValue, GameObject attacker)
     {
         durability += getValue;
         if (durability < 0)

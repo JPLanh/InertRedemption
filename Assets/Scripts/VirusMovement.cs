@@ -111,7 +111,7 @@ public class VirusMovement : MonoBehaviour
             payload["UserID"] = NetworkMain.UserID;
             payload["Team"] = NetworkMain.Team;
             payload["health"] = lv_playerController.livingBeing.health.ToString();
-            payload["host"] = NetworkMain.isHost.ToString();
+//            payload["host"] = NetworkMain.isHost.ToString();
 
             lastUpdate = Time.time + 1f / 45f;
             NetworkMain.broadcastAction(payload);

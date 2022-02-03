@@ -28,6 +28,7 @@ public class InfectionController : MonoBehaviour, IPlayerController
 
     }
 
+    public LivingBeing getLivingBeing() { return null; }
     public float getHealth()
     {
         return livingBeing.health;
@@ -44,7 +45,7 @@ public class InfectionController : MonoBehaviour, IPlayerController
                 Dictionary<string, string> payload = new Dictionary<string, string>();
                 payload["Action"] = "Debug Time";
                 payload["Username"] = NetworkMain.Username;
-                NetworkMain.messageServer(payload);
+                //NetworkMain.messageServer(payload);
             }
 
             if (Input.GetButtonDown("Fire1"))

@@ -39,7 +39,7 @@ public class WeaponBase : MonoBehaviour
                 } else
                 {
                     print(target + " Damage ");
-                    target.damage(true, damage, gameObject);
+                    target.isDamage(true, damage, gameObject);
                 }
             }
             if (!other.transform.GetComponent<NodeCollision>())

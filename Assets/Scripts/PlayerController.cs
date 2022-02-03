@@ -323,9 +323,9 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
             if (Input.GetButtonDown("Debugger Mode"))
             {
                 Dictionary<string, string> payload = new Dictionary<string, string>();
-                payload["Action"] = "Debug Time";
-                payload["Username"] = NetworkMain.Username;
-                NetworkMain.messageServer(payload);
+                payload.Add("Time", Time.time.ToString());
+                payload.Add("Action", "Ping");
+                NetworkMain.broadcastAction("Ping");
             }
 
             if (Input.GetButtonDown("Build"))
@@ -1085,7 +1085,7 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
             case "Update":
                 serverControl(in_payload.data);
                 break;
-            case "Infect":
+            case "Attach":
                 foreach (KeyValuePair<string, VirusController> it_virus in EntityManager.virus)
                 {
                     //                                    it_virus.Value.infe
@@ -1100,10 +1100,10 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
                 {
                     case "Join Game":
                         PlayerController playerSpawn = em.spawnPlayer(in_payload.data);
-                        //NetworkMain.LobbyID = in_payload.data["lobbyID"];
-                        //NetworkMain.UserID = in_payload.data["UserID"];
                         canvas.timeSystem.setTime(StringUtils.convertToFloat(in_payload.data["Time"]));
                         em.resourceCounter = StringUtils.convertToInt(in_payload.data["resourceLimit"]);
+                        //NetworkMain.LobbyID = in_payload.data["lobbyID"];
+                        //NetworkMain.UserID = in_payload.data["UserID"];
                         //in_payload.data["lobbyID"] = NetworkMain.LobbyID;
                         //in_payload.data["Action"] = "Server Update";
                         //NetworkMain.getUpdates(in_payload.data);
@@ -1365,9 +1365,6 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
                     rechargeStation = false;
                     accessEqConsole(true, false);
                     break;
-                case "Infection Checker":
-                    pod.updateMonitor($"No entity detected on pod.");
-                    break;
             }
         }
         //if (col.TryGetComponent<TransferCenter>(out TransferCenter transferCentre))
@@ -1540,5 +1537,10 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
     public void setSingleHandUse(bool in_bool)
     {
         singleHandUse = in_bool;
+    }
+
+    public LivingBeing getLivingBeing()
+    {
+        return livingBeing;
     }
 }

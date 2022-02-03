@@ -22,4 +22,6 @@ public interface IPlayerController
     public void setSingleHandUse(bool in_bool);
     public void buildModeSwitch();
     public float getHealth();
+
+    public LivingBeing getLivingBeing();
 }

@@ -35,7 +35,7 @@ public class EnergyCore : MonoBehaviour, Damagable, Displayable, IBuilding, Inte
             placer.building = this;
     }
 
-    public GameObject damage(bool network, float getValue, GameObject attacker)
+    public GameObject isDamage(bool network, float getValue, GameObject attacker)
     {
         durability += getValue;
         if (durability < 0)

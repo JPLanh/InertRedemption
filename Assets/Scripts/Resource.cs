@@ -1,19 +1,29 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
+[Serializable]
 public class Resource : MonoBehaviour, Damagable
 {
-
+    public string _id;
+    public string __v;
+    public float xPos;
+    public float yPos;
+    public float zPos;
+    public float xRot;
+    public float yRot;
+    public float zRot;
     public float durability;
-    public GameObject loot;
-    public string resourceName;
+    [NonSerialized] public GameObject loot;
+    public string resource;
     public int amount;
+    public string lobbyID;
     public string UID;
     // Start is called before the first frame update
     void Start()
     {
-        loot.GetComponent<Data>().resourceName = resourceName;
+//        loot.GetComponent<Data>().resourceName = resource;
     }
 
     // Update is called once per frame
@@ -22,7 +32,7 @@ public class Resource : MonoBehaviour, Damagable
         
     }
 
-    public GameObject damage(bool network, float getValue, GameObject attacker)
+    public GameObject isDamage(bool network, float getValue, GameObject attacker)
     {
         if (NetworkMain.local)
         {
@@ -34,37 +44,40 @@ public class Resource : MonoBehaviour, Damagable
             }
         } else
         {
-            if (!network)
-            {
-                durability = getValue;
-                if (durability < 0)
-                {
-                    Dictionary<string, string> payload = StringUtils.getPositionAndRotation(transform.position, transform.rotation);
-                    Destroy(this.gameObject);
-                    payload["UID"] = UID;
-                    payload["lobbyID"] = NetworkMain.LobbyID;
-                    payload["resource"] = resourceName;
-                    payload["Action"] = "Spawn Item";
-                    NetworkMain.messageServer(payload);
-                }
-            } else
-            {
+            Debug.Log("Netwokring damage");
                 Dictionary<string, string> payload = new Dictionary<string, string>();
                 payload["UID"] = UID;
-                payload["damage"] = StringUtils.convertFloatToString(getValue);
+                payload["Damage"] = StringUtils.convertFloatToString(getValue);
                 payload["Action"] = "Damage Resource";
-                NetworkMain.messageServer(payload);
-            }
+                NetworkMain.broadcastAction(payload);
+//                NetworkMain.messageServer(payload);
         }
         return null;
+    }
+
+    public void damage(float getValue)
+    {
+        durability += getValue;
+        if (durability <= 0)
+        {
+            createLoot();
+            //Dictionary<string, string> payload = new Dictionary<string, string>();
+            //payload["UID"] = UID;
+            //payload["Action"] = "Destroy Resource";
+            //NetworkMain.broadcastAction(payload);
+            //
+        }
     }
 
     private GameObject createLoot()
     {
         GameObject GO = Instantiate(Resources.Load<GameObject>("Resource Loot"), this.transform.position + new Vector3(0, 1f, 0), Quaternion.identity);
-        GO.transform.GetComponent<Data>().resourceName = resourceName;
-        GO.transform.GetComponent<Data>().UID = UID;
+        GO.TryGetComponent<Data>(out Data lv_data);
+        EntityManager.loot.Add(UID, lv_data);
+        lv_data.resourceName = resource;
+        lv_data.UID = UID;
         Destroy(this.gameObject);
+        EntityManager.resources.Remove(UID);
         return GO;
 
 

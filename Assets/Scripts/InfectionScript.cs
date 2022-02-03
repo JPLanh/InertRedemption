@@ -23,6 +23,7 @@ public class InfectionScript : MonoBehaviour
     public void infect(VirusController in_virus)
     {
         currentVirus = in_virus;
-        currentVirus.getHost(currentPlayer);
+        if (in_virus.name.Equals(NetworkMain.Username)) currentVirus.getHost(currentPlayer);
+        currentVirus.attachToHost(currentPlayer);
     }
 }

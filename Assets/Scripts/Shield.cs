@@ -20,7 +20,7 @@ public class Shield : MonoBehaviour, IShields, Damagable
         print("Shield has been damaged");
     }
 
-    public GameObject damage(bool network, float damage, GameObject attacker)
+    public GameObject isDamage(bool network, float damage, GameObject attacker)
     {
         print("Damage shield taken");
         return null;
