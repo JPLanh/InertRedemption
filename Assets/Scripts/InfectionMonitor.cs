@@ -10,7 +10,7 @@ public class InfectionMonitor : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        EntityManager.infectionMonitor = monitorText;
     }
 
     // Update is called once per frame

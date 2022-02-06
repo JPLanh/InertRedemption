@@ -58,6 +58,7 @@ public class Data : MonoBehaviour, Interactable, Displayable
                 Dictionary<string, string> payload = new Dictionary<string, string>();
                 payload["UID"] = UID;
                 payload["Action"] = "Pickup Item";
+                payload["Type"] = "Action";
                 NetworkMain.broadcastAction(payload);
                 //                Dictionary<string, string> payload = new Dictionary<string, string>();
                 //                payload["UID"] = UID;

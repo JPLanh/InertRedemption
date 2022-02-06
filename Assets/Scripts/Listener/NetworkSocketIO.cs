@@ -12,8 +12,9 @@ public class NetworkSocketIO : MonoBehaviour
     public bool ready = false;
     public float timeChecker = 0;
     public Survivors lv_survivor;
-    [SerializeField]
-    TimeSystem currentTime;
+    [SerializeField] TimeSystem currentTime;
+    public PlayerCanvas lv_canvas;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -21,6 +22,30 @@ public class NetworkSocketIO : MonoBehaviour
         if (!NetworkMain.local)
         {
             playerUpdates = new Dictionary<string, Stack<string>>();
+            lv_canvas.initLoadingScreen("Loading... Please Wait");
+            foreach(KeyValuePair<string, PlayerLobbyStatus> it_player in LobbyListener.virusPlayers)
+            {
+                Dictionary<string, string> payload = new Dictionary<string, string>();
+                payload.Add("Username", it_player.Value.playerName.text);
+                payload.Add("UserID", it_player.Key);
+                payload.Add("Team", it_player.Value.team);
+                payload.Add("health", "100");
+                em.spawnPlayer(payload);
+            }
+            foreach (KeyValuePair<string, PlayerLobbyStatus> it_player in LobbyListener.survivorPlayers)
+            {
+                Dictionary<string, string> payload = new Dictionary<string, string>();
+                payload.Add("Username", it_player.Value.playerName.text);
+                payload.Add("UserID", it_player.Key);
+                payload.Add("Team", it_player.Value.team);
+                payload.Add("health", "100");
+                em.spawnPlayer(payload);
+            }
+
+            Dictionary<string, string> localPlayer = StringUtils.getPayload();
+            localPlayer["lobbyID"] = NetworkMain.LobbyID;
+            localPlayer["Action"] = "Enter Game";
+            NetworkMain.serverAction(localPlayer);
         }
     }
 
@@ -42,7 +67,20 @@ public class NetworkSocketIO : MonoBehaviour
                 {
 
                     switch (out_action)
-                    {
+                    { 
+
+                        case "Spawn Resource":
+                            ResourceEntity lv_tmp_resource = new ResourceEntity(float.Parse(getPayload.data["xPos"]), float.Parse(getPayload.data["yPos"]), getPayload.data["Resource"], getPayload.data["UID"]);
+                            em.loadResources(lv_tmp_resource);
+//                            EntityManager.resourcesLoad.Add(getPayload.data["UID"], lv_tmp_resource);
+                            //                    Debug.Log($"xPos: {lv_tmp_resource.xPos} yPos: {lv_tmp_resource.yPos} UID: {lv_tmp_resource.UID}");
+                            break;
+                        case "Resource Loaded":
+                            lv_canvas.deinitLoadingScreen();
+                            break;
+                        case "Update Infection Monitor":
+                            EntityManager.infectionMonitor.text = getPayload.data["Message"];
+                            break;
                         case "Pickup Item":
                             if (EntityManager.loot.ContainsKey(getPayload.data["UID"]))
                             {
@@ -68,7 +106,6 @@ public class NetworkSocketIO : MonoBehaviour
                             {
                                 Debug.Log("Does not exists");
                                 em.spawnPlayer(getPayload.data);
-                                NetworkMain.isPlaying = true;
                                 Dictionary<string, string> payload = new Dictionary<string, string>();
                                 payload.Add("Username", NetworkMain.Username);
                                 payload.Add("UserID", NetworkMain.UserID);

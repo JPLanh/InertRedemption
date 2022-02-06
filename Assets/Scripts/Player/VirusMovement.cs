@@ -105,6 +105,7 @@ public class VirusMovement : MonoBehaviour
             Dictionary<string, string> payload = StringUtils.getPositionAndRotation(lead.transform.position, rotation);
             payload["Action"] = "Update";
             payload["State"] = "Alive";
+            payload["Type"] = "Player Update";
             payload["WeaponState"] = StringUtils.convertIntToString(lv_playerController.weaponState);
 
             payload["name"] = NetworkMain.Username;

@@ -99,6 +99,7 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
 
     public void setActivePlayer(string getUserID, string getUsername, PlayerCanvas in_canvas)
     {
+        Debug.Log("Setting active plater");
         canvas = in_canvas;
         crosshair = canvas.crosshair;
         canvas.playerCompass.player = this.transform;
@@ -114,6 +115,7 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
 
     public void setOtherPlayer(string getUserID, string getUsername)
     {
+        Debug.Log("Setting second plater");
         playerCamera.GetComponent<AudioListener>().enabled = false;
         if (canvas != null) canvas.playerCompass.player = null;
         canvas = null;
@@ -212,55 +214,21 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
         //}
     }
 
-
     public void serverControl(Payload in_payload)
     {
-//        Debug.Log(in_payload.data["Action"]);
         string[] parsedAction = in_payload.data["Action"].Split(' ');
+        //        Debug.Log(in_payload.data["Action"]);
         switch (parsedAction[0])
         {
-            case "Ping":
-                Debug.Log($"CurrentTime: {Time.time} - {in_payload.data["Time"]} = {float.Parse(in_payload.data["Time"]) - Time.time}");
-                break;
             case "Eject":
                 Eject();
                 if (in_payload.source.Equals(NetworkMain.Username)) detachFromHost();
                 break;
-            case "Update":
-                serverControl(in_payload.data);
-                if (in_payload.source != NetworkMain.Username)
-                {
-
-                }
-                //    if (in_payload.data["State"] == "Alive")
-                //    {
-                //        em.spawnPlayer(in_payload.data);
-                //    }
-                //    else
-                //    {
-                //        if (in_payload.data["State"] == "Alive")
-                //        else if (in_payload.data["State"] == "Dead")
-                //            Destroy(gameObject);
-                //    }
-                //}
-                //else
-                //{
-                //    if (isMovable())
-                //    {
-                //        serverControl(in_payload.data);
-                //    }
-                //    if (NetworkMain.isHost != bool.Parse(in_payload.data["host"]))
-                //    {
-                //        NetworkMain.isHost = bool.Parse(in_payload.data["host"]);
-                //        if (bool.Parse(in_payload.data["host"]))
-                //        {
-                //            em.newHost();
-                //        }
-                //    }
-                //
-                break;
             case "Infect":
                 negativeInfect(in_payload.target, float.Parse(in_payload.data["Amount"]));
+                break;
+            case "Update":
+                serverControl(in_payload.data);
                 break;
             case "Attach":
                 foreach (KeyValuePair<string, VirusController> it_virus in EntityManager.virus)
@@ -269,9 +237,6 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
                     lv_survivor.getInfectionScript().infect(it_virus.Value);
                 }
                 break;
-            case "Spaceship":
-                survivorsGO.spaceship.addResource(parsedAction[3], int.Parse(parsedAction[2]));
-                break;
             default:
                 switch (in_payload.data["Action"])
                 {
@@ -279,51 +244,15 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
                         PlayerController playerSpawn = em.spawnPlayer(in_payload.data);
                         canvas.timeSystem.setTime(StringUtils.convertToFloat(in_payload.data["Time"]));
                         em.resourceCounter = StringUtils.convertToInt(in_payload.data["resourceLimit"]);
-                        //PlayerController playerSpawn = em.spawnPlayer(in_payload.data);
-                        //NetworkMain.LobbyID = in_payload.data["lobbyID"];
-                        //NetworkMain.UserID = in_payload.data["UserID"];
-                        //canvas.timeSystem.setTime(StringUtils.convertToFloat(in_payload.data["Time"]));
-                        //em.resourceCounter = StringUtils.convertToInt(in_payload.data["resourceLimit"]);
-                        //in_payload.data["lobbyID"] = NetworkMain.LobbyID;
-                        //in_payload.data["Action"] = "Server Update";
-                        //NetworkMain.getUpdates(in_payload.data);
                         break;
-                    case "Fire1":
-                    case "Fire2":
-                    case "Fire1Up":
-                    case "Reload":
-                    case "Swap holding":
-                    case "Swap Gun":
-                    case "Menu":
-                    case "Interact":
-                    case "Build":
-                    case "Spawn Resource":
-                    case "Flash Light":
-                    case "Skill 1":
-                    case "Skill 2":
-                    case "Skill 3":
-                    case "Skill 4":
-                    case "Skill 5":
+                    default:
                         actionDecider(in_payload.data["Action"]);
                         break;
-                        //case "Debug Time":
-                        //    float timeCalc = (StringUtils.convertToFloat(getPayload["Time"]) % 600) / 600;
-                        //    print("Server: " + StringUtils.convertFloatToString(timeCalc));
-                        //    print("Client: " + currentTime.time);
-                        //    print("Difference: " + (currentTime.time - timeCalc));
-                        //    break;
-                        //case "Pull":
-                        //    if (NetworkMain.Username == getPayload["Username"]) getExistance.canMove = false;
-                        //    break;
-                        //case "Pull Finish":
-                        //    if (NetworkMain.Username == getPayload["Username"])
-                        //        getExistance.canMove = true;
-                        //    break;
                 }
                 break;
-
         }
     }
+
     private void playerKeyboardActionMapper()
     {
         string getCmd = null;
@@ -385,15 +314,19 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
             {
                 getCmd = "InteractUp";
             }
-        
+
+
 
         if (getCmd != null)
         {
+            Dictionary<string, string> payload = new Dictionary<string, string>();
+            payload["Type"] = "Player Action";
+            payload["Action"] = getCmd;
             if (getCmd.Contains("Up"))
             {
                 if (!NetworkMain.local)
                 {
-                    NetworkMain.broadcastAction(getCmd);
+                    NetworkMain.broadcastAction(payload);
                 }
                 else
                 {
@@ -407,7 +340,7 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
                     spamTimer = Time.time + .15f;
                     if (!NetworkMain.local)
                     {
-                        NetworkMain.broadcastAction(getCmd);
+                        NetworkMain.broadcastAction(payload);
                     }
                     else
                     {
@@ -480,6 +413,7 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
             StartCoroutine(LerpRotation(newAngle, .0125f));
         }
     }
+
 
     IEnumerator LerpPosition(Vector3 targetPosition, float duration)
     {
@@ -642,15 +576,6 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
         {
             Debug.Log("PlayerControlelr doesn't exists");
         }
-        //if (infectedPlayer != null)
-        //{
-        //    infectedPlayer.livingBeing.infectionRate += livingBeing.infectionRate * Time.deltaTime;
-        //    infectedPlayer.TryGetComponent<TargetMarker>(out TargetMarker get_targetMarker);
-        //    if (get_targetMarker == null && infectedPlayer.livingBeing.infectionRate >= 60f)
-        //    {
-        //        infectedPlayer.markedAsInfected(canvas);
-        //    }
-        //}
     }
 
 
@@ -685,11 +610,10 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
         {
             Dictionary<string, string> payload = new Dictionary<string, string>();
             payload.Add("Action", "Infect");
+            payload.Add("Type", "Player Action");
             payload.Add("Amount", (livingBeing.infectionRate * Time.deltaTime).ToString());
-            NetworkMain.broadcastAction(payload, infectedPlayer.name);
+            NetworkMain.broadcastAction(payload, infectedPlayer.userID);
         }
-
-        //        negativeInfect();
     }
 
     public void toggleFlashLight()

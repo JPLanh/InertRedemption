@@ -67,7 +67,7 @@ public class BasicMovement : MonoBehaviour
 
             if (lv_playerController.canLook)
             {
-                if (!lv_playerController.livingBeing.handAnimator.GetBool("accessMenu"))
+                if (!lv_playerController.livingBeing.handAnimator.GetBool("accessMenu") && NetworkMain.isBroadcastable)
                 {
                     fpsCameraView();
                 }
@@ -143,6 +143,7 @@ public class BasicMovement : MonoBehaviour
             lastRot = rotation;
             Dictionary<string, string> payload = StringUtils.getPositionAndRotation(lead.transform.position, rotation);
             payload["Action"] = "Update";
+            payload["Type"] = "Player Update";
             payload["State"] = "Alive";
             payload["WeaponState"] = StringUtils.convertIntToString(lv_playerController.weaponState);
 
@@ -152,7 +153,7 @@ public class BasicMovement : MonoBehaviour
             payload["health"] = lv_playerController.livingBeing.health.ToString();
 //            payload["host"] = NetworkMain.isHost.ToString();
 
-            lastUpdate = Time.time + 1f / 45f;
+            lastUpdate = Time.time + 1f / 60f;
             NetworkMain.broadcastAction(payload);
             //            NetworkMain.socket.Emit("Update", StringUtils.convertPayloadToJson(payload));
         }

@@ -14,6 +14,7 @@ public class NetworkMain : MonoBehaviour
 {
     private static bool isConnected { get; set; }
     public static bool isPlaying;
+    public static bool isBroadcastable;
     public static QSocket socket;
     public static String Username { get; set; }
     public static String Password { get; set; }
@@ -81,40 +82,54 @@ public class NetworkMain : MonoBehaviour
                 .Replace("}\"", "}")
                );
 
-            switch (lv_payload.data["Action"])
+            switch (lv_payload.data["Type"])
             {
-                case "Exit":
-                case "Message":
-                case "Swap Team":
-                case "Ready":
-                case "Pickup Item":
-                case "Damage Resource":
-                case "Join Acknowledge":
-                case "Join Game":
+                case "Action":
                     serverResponse.Enqueue(lv_payload);
                     break;
-                case "Get Lobby Users":
-                    if (!lv_payload.source.Equals(UserID))
-                    {
-                        Dictionary<string, string> payload = new Dictionary<string, string>();
-                        payload.Add("Username", NetworkMain.Username);
-                        payload.Add("UserID", NetworkMain.UserID);
-                        payload.Add("Team", NetworkMain.Team);
-                        payload.Add("Action", "In Lobby");
-                        NetworkMain.replyAction(payload, lv_payload.data["UserID"]);
-                        serverResponse.Enqueue(lv_payload);
-                    }
+                case "Player Update":
+                    payloadStack[lv_payload.source].positionQueue.Push(lv_payload);
                     break;
-                case "WhoisHere":
-                    whoisHere(lv_payload);
+                case "Player Action":
+                    payloadStack[lv_payload.source].actionQueue.Push(lv_payload);
                     break;
-                case "Update":
-                    if (isPlaying) payloadStack[lv_payload.source].positionQueue.Push(lv_payload);
-                    break;
-                default:
-                    if (isPlaying) payloadStack[lv_payload.source].actionQueue.Push(lv_payload);
-                    break;
+
             }
+
+            //switch (lv_payload.data["Action"])
+            //{
+            //    case "Exit":
+            //    case "Message":
+            //    case "Swap Team":
+            //    case "Ready":
+            //    case "Pickup Item":
+            //    case "Damage Resource":
+            //    case "Join Acknowledge":
+            //    case "Join Game":
+            //        serverResponse.Enqueue(lv_payload);
+            //        break;
+            //    case "Get Lobby Users":
+            //        if (!lv_payload.source.Equals(UserID))
+            //        {
+            //            Dictionary<string, string> payload = new Dictionary<string, string>();
+            //            payload.Add("Username", NetworkMain.Username);
+            //            payload.Add("UserID", NetworkMain.UserID);
+            //            payload.Add("Team", NetworkMain.Team);
+            //            payload.Add("Action", "In Lobby");
+            //            NetworkMain.replyAction(payload, lv_payload.data["UserID"]);
+            //            serverResponse.Enqueue(lv_payload);
+            //        }
+            //        break;
+            //    case "WhoisHere":
+            //        whoisHere(lv_payload);
+            //        break;
+            //    case "Update":
+            //        if (isPlaying) payloadStack[lv_payload.source].positionQueue.Push(lv_payload);
+            //        break;
+            //    default:
+            //        if (isPlaying) payloadStack[lv_payload.source].actionQueue.Push(lv_payload);
+            //        break;
+            //}
         });
 
         socket.On("Loading", (getData) =>
@@ -165,38 +180,38 @@ public class NetworkMain : MonoBehaviour
 
     public static void reply(Dictionary<string, string> getPayload, string getTarget)
     {
-        if (!local)
-        {
             Dictionary<string, string> networkPayload = new Dictionary<string, string>();
             networkPayload["source"] = UserID;
             networkPayload["lobbyID"] = NetworkMain.LobbyID;
             networkPayload["data"] = StringUtils.convertPayloadToJson(getPayload);
             networkPayload["target"] = getTarget;
             socket.Emit("Reply", StringUtils.convertPayloadToJson(networkPayload));
-        }
     }
     public static void broadcast(Dictionary<string, string> getPayload, string getTarget)
     {
-        if (!local)
-        {
             Dictionary<string, string> networkPayload = new Dictionary<string, string>();
             networkPayload["source"] = UserID;
             networkPayload["lobbyID"] = NetworkMain.LobbyID;
             networkPayload["data"] = StringUtils.convertPayloadToJson(getPayload);
             networkPayload["target"] = getTarget;
             socket.Emit("Broadcast", StringUtils.convertPayloadToJson(networkPayload));
-        }
+    }
+    public static void broadcastOthers(Dictionary<string, string> getPayload, string getTarget)
+    {
+            Dictionary<string, string> networkPayload = new Dictionary<string, string>();
+            networkPayload["source"] = UserID;
+            networkPayload["lobbyID"] = NetworkMain.LobbyID;
+            networkPayload["data"] = StringUtils.convertPayloadToJson(getPayload);
+            networkPayload["target"] = getTarget;
+            socket.Emit("Other", StringUtils.convertPayloadToJson(networkPayload));
     }
     public static void serverRequest(Dictionary<string, string> getPayload, string getTarget)
     {
-        if (!local)
-        {
             Dictionary<string, string> networkPayload = new Dictionary<string, string>();
             networkPayload["source"] = UserID;
             networkPayload["data"] = StringUtils.convertPayloadToJson(getPayload);
             networkPayload["target"] = getTarget;
             socket.Emit("Server", StringUtils.convertPayloadToJson(networkPayload));
-        }
     }
 
     public static void Login(string in_username, string in_server, string in_action)
@@ -211,49 +226,58 @@ public class NetworkMain : MonoBehaviour
 
     public static void replyAction(Dictionary<string, string> in_payload)
     {
-        if (!local)
+        if (isBroadcastable)
         {
             reply(in_payload, null);
         }
     }
     public static void replyAction(Dictionary<string, string> in_payload, string getTarget)
     {
-        if (!local)
+        if (isBroadcastable)
         {
             reply(in_payload, getTarget);
+        }
+    }
+    public static void broadcastToOther(Dictionary<string, string> in_payload)
+    {
+        if (isBroadcastable)
+        {
+            broadcastOthers(in_payload, null);
         }
     }
 
     public static void broadcastAction(string getString)
     {
-        if (!local)
+        if (isBroadcastable)
         {
             Dictionary<string, string> payload = StringUtils.getPayload();
             payload.Add("Action", getString);
+            payload.Add("Type", "Action");
             broadcast(payload, null);
         }
     }
 
     public static void broadcastAction(string getString, string getTarget)
     {
-        if (!local)
+        if (isBroadcastable)
         {
             Dictionary<string, string> payload = StringUtils.getPayload();
             payload.Add("Action", getString);
+            payload.Add("Type", "Action");
             broadcast(payload, getTarget);
         }
     }
 
     public static void broadcastAction(Dictionary<string, string> in_payload)
     {
-        if (!local)
+        if (isBroadcastable)
         {
             broadcast(in_payload, null);
         }
     }
     public static void broadcastAction(Dictionary<string, string> in_payload, string getTarget)
     {
-        if (!local)
+        if (isBroadcastable)
         {
             broadcast(in_payload, getTarget);
         }
@@ -261,10 +285,7 @@ public class NetworkMain : MonoBehaviour
 
     public static void serverAction(Dictionary<string, string> in_payload)
     {
-        if (!local)
-        {
             serverRequest(in_payload, null);
-        }
     }
     #endregion
 }

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 public class EntityManager : MonoBehaviour
@@ -29,32 +30,36 @@ public class EntityManager : MonoBehaviour
     public static Dictionary<string, Resource> resources = new Dictionary<string, Resource>();
     public static Dictionary<string, Data> loot = new Dictionary<string, Data>();
 
+    public static Text infectionMonitor;
+
     // Start is called before the first frame update
     void Start()
     {
 //        SceneManager.UnloadScene("mainScene");
-        if (NetworkMain.local)
-        {
-            print("Local");
-            Dictionary<string, string> localPlayer = StringUtils.getPayload();
-            localPlayer["name"] = NetworkMain.Username;
-            localPlayer["UserID"] = "8188HFCV6";
-            localPlayer["Team"] = NetworkMain.Team;
-            localPlayer["health"] = "100";
-            spawnPlayer(localPlayer);
-            //newHost();
-        } else
-        {
-            Dictionary<string, string> localPlayer = StringUtils.getPayload();
-            localPlayer["Username"] = NetworkMain.Username;
-            localPlayer["UserID"] = NetworkMain.UserID;
-            localPlayer["lobbyID"] = NetworkMain.LobbyID;
-            localPlayer["Team"] = NetworkMain.Team;
-            localPlayer["health"] = "100";
-            localPlayer["Action"] = "Join Game";
-            NetworkMain.broadcastAction(localPlayer);
-            loadAllResources();
-        }
+        //if (NetworkMain.local)
+        //{
+        //    print("Local");
+        //    Dictionary<string, string> localPlayer = StringUtils.getPayload();
+        //    localPlayer["name"] = NetworkMain.Username;
+        //    localPlayer["UserID"] = "8188HFCV6";
+        //    localPlayer["Team"] = NetworkMain.Team;
+        //    localPlayer["health"] = "100";
+        //    spawnPlayer(localPlayer);
+        //    //newHost();
+        //} else
+        //{
+        //    Dictionary<string, string> localPlayer = StringUtils.getPayload();
+        //    localPlayer["Username"] = NetworkMain.Username;
+        //    localPlayer["UserID"] = NetworkMain.UserID;
+        //    localPlayer["lobbyID"] = NetworkMain.LobbyID;
+        //    localPlayer["Team"] = NetworkMain.Team;
+        //    localPlayer["health"] = "100";
+        //    localPlayer["Action"] = "Join Game";
+        //    NetworkMain.broadcastToOther(localPlayer);
+        //    spawnPlayer(localPlayer);
+        //    NetworkMain.isPlaying = true;
+        //    loadAllResources();
+        //}
     }
 
     //private void modifyTestDummy(string in_name)
@@ -294,10 +299,10 @@ public class EntityManager : MonoBehaviour
 
     public void loadResources(ResourceEntity in_resource)
     {
-        GameObject newNode = Instantiate(Resources.Load<GameObject>(in_resource.type), resourceList.transform);
+        GameObject newNode = Instantiate(Resources.Load<GameObject>(in_resource.resource), resourceList.transform);
         newNode.TryGetComponent<Resource>(out Resource out_resource);
         out_resource.UID = in_resource.UID;
-        out_resource.resource = in_resource.type;
+        out_resource.resource = in_resource.resource;
         resources.Add(in_resource.UID, out_resource);
         newNode.name = in_resource.UID;
         newNode.transform.localPosition = new Vector3(in_resource.xPos, 0, in_resource.yPos);

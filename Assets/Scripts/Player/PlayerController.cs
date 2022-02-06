@@ -442,11 +442,14 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
 
         if (getCmd != null)
         {
+            Dictionary<string, string> payload = new Dictionary<string, string>();
+            payload["Type"] = "Player Action";
+            payload["Action"] = getCmd;
             if (getCmd.Contains("Up"))
             {
                 if (!NetworkMain.local)
                 {
-                    NetworkMain.broadcastAction(getCmd);
+                    NetworkMain.broadcastAction(payload);
                 }
                 else
                 {
@@ -460,7 +463,7 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
                     spamTimer = Time.time + .15f;
                     if (!NetworkMain.local)
                     {
-                        NetworkMain.broadcastAction(getCmd);
+                        NetworkMain.broadcastAction(payload);
                     }
                     else
                     {
@@ -477,6 +480,14 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
         {
             case "Menu":
                 accessMenu(true);
+                break;
+            case "Access Console":
+                rechargeStation = true;
+                accessEqConsole(true, true);
+                break;
+            case "Leave Access Console":
+                rechargeStation = false;
+                accessEqConsole(true, false);
                 break;
             //case "Build":
             //    buildModeSwitch();
@@ -1080,6 +1091,7 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
     public void serverControl(Payload in_payload)
     {
         string[] parsedAction = in_payload.data["Action"].Split(' ');
+//        Debug.Log(in_payload.data["Action"]);
         switch (parsedAction[0])
         {
             case "Update":
@@ -1088,11 +1100,11 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
             case "Attach":
                 foreach (KeyValuePair<string, VirusController> it_virus in EntityManager.virus)
                 {
-                    //                                    it_virus.Value.infe
                     getInfectionScript().infect(it_virus.Value);
                 }
                 break;
             case "Spaceship":
+                Debug.Log(in_payload.data["Action"]);
                 survivorsGO.spaceship.addResource(parsedAction[3], int.Parse(parsedAction[2]));
                 break;
             default:
@@ -1102,46 +1114,12 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
                         PlayerController playerSpawn = em.spawnPlayer(in_payload.data);
                         canvas.timeSystem.setTime(StringUtils.convertToFloat(in_payload.data["Time"]));
                         em.resourceCounter = StringUtils.convertToInt(in_payload.data["resourceLimit"]);
-                        //NetworkMain.LobbyID = in_payload.data["lobbyID"];
-                        //NetworkMain.UserID = in_payload.data["UserID"];
-                        //in_payload.data["lobbyID"] = NetworkMain.LobbyID;
-                        //in_payload.data["Action"] = "Server Update";
-                        //NetworkMain.getUpdates(in_payload.data);
                         break;
-                    case "Fire1":
-                    case "Fire2":
-                    case "Fire1Up":
-                    case "Reload":
-                    case "Swap holding":
-                    case "Swap Gun":
-                    case "Menu":
-                    case "Interact":
-                    case "Build":
-                    case "Spawn Resource":
-                    case "Flash Light":
-                    case "Skill 1":
-                    case "Skill 2":
-                    case "Skill 3":
-                    case "Skill 4":
-                    case "Skill 5":
+                    default:
                         actionDecider(in_payload.data["Action"]);
                         break;
-                    //case "Debug Time":
-                    //    float timeCalc = (StringUtils.convertToFloat(getPayload["Time"]) % 600) / 600;
-                    //    print("Server: " + StringUtils.convertFloatToString(timeCalc));
-                    //    print("Client: " + currentTime.time);
-                    //    print("Difference: " + (currentTime.time - timeCalc));
-                    //    break;
-                        //case "Pull":
-                        //    if (NetworkMain.Username == getPayload["Username"]) getExistance.canMove = false;
-                        //    break;
-                        //case "Pull Finish":
-                        //    if (NetworkMain.Username == getPayload["Username"])
-                        //        getExistance.canMove = true;
-                        //    break;
                 }
                 break;
-
         }
     }
 
@@ -1158,26 +1136,17 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
 
             livingBeing.legsAnimator.SetBool("Running", true);
             movementController.playMovementSound();
-            //            this.transform.position = StringUtils.getVectorFromJson(payload, "Pos");// new Vector3(float.Parse(payload["xPos"]), float.Parse(payload["yPos"]), float.Parse(payload["zPos"]));
-            //        playerCamera.transform.localRotation = Quaternion.Euler(float.Parse(payload["xRot"]), 0, 0);
-            //livingBeing.mainHand.transform.localRotation = Quaternion.Euler(0, 0, -float.Parse(payload["xRot"]));
-            //livingBeing.weaponHarness.transform.localRotation = Quaternion.Euler(-float.Parse(payload["xRot"]), 0, 0);
-            StartCoroutine(LerpPosition(StringUtils.getVectorFromJson(payload, "Pos"), .025f));
-            //Quaternion newAngle = Quaternion.Euler(float.Parse(payload["xRot"]), 0f, 0f);
-            //StartCoroutine(LerpRotation(livingBeing.upperBody.transform.localRotation, newAngle, .025f));
+            StartCoroutine(LerpPosition(StringUtils.getVectorFromJson(payload, "Pos"), (1f / 30f)));
             Quaternion newAngle = Quaternion.Euler(0f, float.Parse(payload["yRot"]), 0f);
-            StartCoroutine(LerpRotation(transform.rotation, newAngle, .025f));
-            //livingBeing.upperBody.transform.localRotation = Quaternion.Euler(float.Parse(payload["xRot"]), 0, 0);
-            //transform.eulerAngles = new Vector2(0, float.Parse(payload["yRot"]));
+            StartCoroutine(LerpRotation(transform.rotation, newAngle, (1f / 30f)));
         }
         else
         {
-
             livingBeing.legsAnimator.SetBool("Running", false);
             movementController.stopMovementSound();
         }
-
     }
+
     IEnumerator LerpPosition(Vector3 targetPosition, float duration)
     {
         float time = 0;
@@ -1241,6 +1210,91 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
     }
     #endregion
 
+
+
+    public void accessConsole()
+    {
+        Dictionary<string, string> payload = new Dictionary<string, string>();
+        payload["Type"] = "Player Action";
+        payload["Action"] = "Access Console";
+        NetworkMain.broadcastAction(payload);
+    }
+    public void leaveAccessConsole()
+    {
+        Dictionary<string, string> payload = new Dictionary<string, string>();
+        payload["Type"] = "Player Action";
+        payload["Action"] = "Leave Access Console";
+        NetworkMain.broadcastAction(payload);
+    }
+
+    public void fuelShip(ConsolePod in_pod)
+    {
+//        Debug.Log("Access fuling ship");
+        foreach (KeyValuePair<String, int> it_inventory in inventory.getInventory())
+        {
+            //            Debug.Log($"{it_inventory.Key} : {it_inventory.Value}");
+            Dictionary<string, string> payload = new Dictionary<string, string>();
+            payload["Type"] = "Player Action";
+            if (it_inventory.Key.Equals("Log"))
+            {
+                if (it_inventory.Value > 0)
+                {
+                    if (survivorsGO.spaceship.resources.ContainsKey("Log"))
+                    {
+                        if (!NetworkMain.local)
+                        {
+                            payload["Action"] = $"Spaceship Add {it_inventory.Value} Log";
+                            NetworkMain.broadcastAction(payload);
+                        }
+                        else
+                            survivorsGO.spaceship.addResource("Log", it_inventory.Value);
+                    }
+
+                }
+            }
+            if (it_inventory.Key.Equals("Stone"))
+            {
+                if (it_inventory.Value > 0)
+                {
+                    if (survivorsGO.spaceship.resources.ContainsKey("Stone"))
+                    {
+                        if (!NetworkMain.local)
+                        {
+                            payload["Action"] = $"Spaceship Add {it_inventory.Value} Stone";
+                            NetworkMain.broadcastAction(payload);
+                        }
+                        else
+                            survivorsGO.spaceship.addResource("Stone", it_inventory.Value);
+                    }
+
+                }
+            }
+        }
+
+        inventory.getInventory()["Log"] = 0;
+        inventory.getInventory()["Stone"] = 0;
+
+    }
+
+    //        survivorsGO.spaceship.resources
+
+    public bool pickupItem(Data getItem)
+    {
+
+        if (inventory.recieveItem(getItem.resourceName, 1))
+        {
+            dataCount += 1;
+            //GameObject.Find("Canvas").transform.GetChild(3).gameObject.GetComponent<Text>().text = "Data: " + dataCount;
+            canvas.toast.newNotification("You picked up 1 " + getItem.resourceName + " (Total: " + inventory.getInventory()[getItem.resourceName] + ")");
+            //                Destroy(col.gameObject);
+            return true;
+        }
+        else
+        {
+            canvas.toast.newNotification("Inventory is full");
+            return false;
+        }
+    }
     void OnTriggerEnter(Collider col)
     {
         //if (col.TryGetComponent<TransferCenter>(out TransferCenter transferCentre))
@@ -1274,8 +1328,8 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
                         pod.updateMonitor($"Current Infection: {livingBeing.infectionRate}");
                         break;
                     case "Console":
-                        rechargeStation = true;
-                        accessEqConsole(true, true);
+                        if (mainMenuGO == null)
+                            accessConsole();
                         break;
                     case "Enter Teleport":
                         canvas.lead.transform.SetParent(survivorsGO.spaceshipList.transform);
@@ -1296,58 +1350,6 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
             }
         }
     }
-
-    public void fuelShip(ConsolePod in_pod)
-    {
-        foreach (KeyValuePair<String, int> it_inventory in inventory.getInventory())
-        {
-            if (it_inventory.Key.Equals("Log"))
-            {
-                if (survivorsGO.spaceship.resources.ContainsKey("Log"))
-                {
-                    if (!NetworkMain.local)
-                        NetworkMain.broadcastAction($"Spaceship Add {it_inventory.Value} Log");
-                    else
-                        survivorsGO.spaceship.addResource("Log", it_inventory.Value);
-                }
-            }
-            if (it_inventory.Key.Equals("Stone"))
-            {
-                if (survivorsGO.spaceship.resources.ContainsKey("Stone"))
-                {
-                    if (!NetworkMain.local)
-                        NetworkMain.broadcastAction($"Spaceship Add {it_inventory.Value} Stone");
-                    else
-                        survivorsGO.spaceship.addResource("Stone", it_inventory.Value);
-                }
-            }
-        }
-
-        inventory.getInventory()["Log"] = 0;
-        inventory.getInventory()["Stone"] = 0;
-
-    }
-
-    //        survivorsGO.spaceship.resources
-
-    public bool pickupItem(Data getItem)
-    {
-
-        if (inventory.recieveItem(getItem.resourceName, 1))
-        {
-            dataCount += 1;
-            //GameObject.Find("Canvas").transform.GetChild(3).gameObject.GetComponent<Text>().text = "Data: " + dataCount;
-            canvas.toast.newNotification("You picked up 1 " + getItem.resourceName + " (Total: " + inventory.getInventory()[getItem.resourceName] + ")");
-            //                Destroy(col.gameObject);
-            return true;
-        }
-        else
-        {
-            canvas.toast.newNotification("Inventory is full");
-            return false;
-        }
-    }
-
     void OnTriggerExit(Collider col)
     {
         Spaceship getShip = col.GetComponent<Spaceship>();
@@ -1357,14 +1359,18 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
             transform.SetParent(survivorsGO.survivorList.transform);
         }
 
+
         if (col.TryGetComponent<ConsolePod>(out ConsolePod pod))
         {
-            switch (pod.action)
+            if (name.Equals(NetworkMain.Username))
             {
-                case "Console":
-                    rechargeStation = false;
-                    accessEqConsole(true, false);
-                    break;
+                switch (pod.action)
+                {
+                    case "Console":
+                 //       if (mainMenuGO != null)
+                            leaveAccessConsole();
+                        break;
+                }
             }
         }
         //if (col.TryGetComponent<TransferCenter>(out TransferCenter transferCentre))

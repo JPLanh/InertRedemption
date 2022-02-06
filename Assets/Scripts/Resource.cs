@@ -44,9 +44,9 @@ public class Resource : MonoBehaviour, Damagable
             }
         } else
         {
-            Debug.Log("Netwokring damage");
                 Dictionary<string, string> payload = new Dictionary<string, string>();
                 payload["UID"] = UID;
+            payload["Type"] = "Action";
                 payload["Damage"] = StringUtils.convertFloatToString(getValue);
                 payload["Action"] = "Damage Resource";
                 NetworkMain.broadcastAction(payload);
@@ -74,7 +74,15 @@ public class Resource : MonoBehaviour, Damagable
         GameObject GO = Instantiate(Resources.Load<GameObject>("Resource Loot"), this.transform.position + new Vector3(0, 1f, 0), Quaternion.identity);
         GO.TryGetComponent<Data>(out Data lv_data);
         EntityManager.loot.Add(UID, lv_data);
-        lv_data.resourceName = resource;
+        switch (resource)
+        {
+            case "Tree":
+                lv_data.resourceName = "Log";
+                break;
+            case "Stone":
+                lv_data.resourceName = "Stone";
+                break;
+        }
         lv_data.UID = UID;
         Destroy(this.gameObject);
         EntityManager.resources.Remove(UID);

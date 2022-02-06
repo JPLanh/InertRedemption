@@ -24,11 +24,13 @@ public class LobbyListener : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        NetworkMain.isBroadcastable = true;
         messageField.Select();
         countDownTimer = countdown();
         Dictionary<string, string> payload = new Dictionary<string, string>();
         payload.Add("Username", NetworkMain.Username);
         payload.Add("UserID", NetworkMain.UserID);
+        payload.Add("Type", "Action");
         payload.Add("Team", "Survivor");
         payload.Add("Action", "Get Lobby Users");
         NetworkMain.broadcastAction(payload);
@@ -50,6 +52,18 @@ public class LobbyListener : MonoBehaviour
                     managePlayerList();
                     break;
                 case "Get Lobby Users":
+                    if (!getPayload.source.Equals(NetworkMain.UserID))
+                    {
+                        Dictionary<string, string> payload = new Dictionary<string, string>();
+                        payload.Add("Username", NetworkMain.Username);
+                        payload.Add("UserID", NetworkMain.UserID);
+                        payload.Add("Team", NetworkMain.Team);
+                        addNewPlayer(getPayload.data["UserID"], getPayload.data["Username"], getPayload.data["Team"]);
+                        payload.Add("Action", "In Lobby");
+                        NetworkMain.replyAction(payload, getPayload.data["UserID"]);
+//                        serverResponse.Enqueue(lv_payload);
+                    }
+                    break;
                 case "In Lobby":
                     addNewPlayer(getPayload.data["UserID"], getPayload.data["Username"], getPayload.data["Team"]);
                     managePlayerList();
@@ -78,12 +92,12 @@ public class LobbyListener : MonoBehaviour
         {
             case "Survivor":
                 lv_player.transform.SetParent(survivorList);
-                lv_player.transform.localPosition = new Vector3(-155f, 230f - (survivorPlayers.Count * 35f), 0f);
+                lv_player.GetComponent<RectTransform>().anchoredPosition = new Vector3(0f, -35f - (survivorPlayers.Count * 35f), 0f);
                 survivorPlayers.Add(in_UID, lv_playerLobbyStatus);
                 break;
             case "Virus":
                 lv_player.transform.SetParent(virusList);
-                lv_player.transform.localPosition = new Vector3(-155f, 230f - (virusPlayers.Count * 35f), 0f);
+                lv_player.GetComponent<RectTransform>().anchoredPosition = new Vector3(0f, -35f - (virusPlayers.Count * 35f), 0f);
                 virusPlayers.Add(in_UID, lv_playerLobbyStatus);
                 break;
         }
@@ -143,13 +157,13 @@ public class LobbyListener : MonoBehaviour
         int counter = 0;
         foreach(KeyValuePair<string, PlayerLobbyStatus> it_player in survivorPlayers)
         {
-            it_player.Value.transform.localPosition = new Vector3(-35f, 275f - (counter * 35f), 0f);
+            it_player.Value.GetComponent<RectTransform>().anchoredPosition = new Vector3(0f, -35f - (counter * 35f), 0f);
             counter += 1;
         }
         counter = 0;
         foreach (KeyValuePair<string, PlayerLobbyStatus> it_player in virusPlayers)
         {
-            it_player.Value.transform.localPosition = new Vector3(-35f, 275f - (counter * 35f), 0f);
+            it_player.Value.GetComponent<RectTransform>().anchoredPosition = new Vector3(0f, -35f - (counter * 35f), 0f);
             counter += 1;
         }
     }
@@ -178,7 +192,11 @@ public class LobbyListener : MonoBehaviour
     {
         while (true)
         {
-            if (countDown == 0) SceneManager.LoadScene("Loading");
+            if (countDown == 0)
+            {
+                SceneManager.LoadScene("mainScene");
+                NetworkMain.isBroadcastable = false;
+            }
             chatField.text += $"Game is starting in {countDown}...\n";
             countDown -= 1;
             yield return new WaitForSeconds(1);

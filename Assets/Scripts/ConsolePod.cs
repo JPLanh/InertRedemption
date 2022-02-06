@@ -23,6 +23,11 @@ public class ConsolePod : MonoBehaviour
 
     public void updateMonitor(string in_string)
     {
-        monitorText.text = in_string;
+        Dictionary<string, string> payload = new Dictionary<string, string>();
+        payload["Message"] = in_string;
+        payload["Type"] = "Action";
+        payload["Action"] = "Update Infection Monitor";
+        NetworkMain.broadcastAction(payload);
+//        monitorText.text = in_string;
     }
 }

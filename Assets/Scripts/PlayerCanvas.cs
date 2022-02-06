@@ -12,7 +12,7 @@ public class PlayerCanvas : MonoBehaviour
     public TimeSystem timeSystem;
     public GameObject lead;
 
-
+    public LoadingScreen loadingUI;
     public LightIndicator lightIndicator;
     public LightIndicator ammoIndicator;
     public LightIndicator energyIndicator;
@@ -35,5 +35,19 @@ public class PlayerCanvas : MonoBehaviour
     {
         //downloadButton.SetActive(shop);
         //uploadButton.SetActive(shop);
+    }
+
+    public void initLoadingScreen(string in_loading)
+    {
+        loadingUI.gameObject.SetActive(true);
+        loadingUI.loading(in_loading);
+        lead.GetComponent<CharacterController>().enabled = false;
+    }
+
+    public void deinitLoadingScreen()
+    {
+        loadingUI.unload();
+        loadingUI.gameObject.SetActive(false);
+        lead.GetComponent<CharacterController>().enabled = true;
     }
 }

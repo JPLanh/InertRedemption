@@ -35,6 +35,7 @@ public class SendButton : MonoBehaviour
         payload["Message"] = chatMessage.text;
         payload["Username"] = NetworkMain.Username;
         payload["Action"] = "Message";
+        payload["Type"] = "Action";
         NetworkMain.broadcastAction(payload);
         //if (NetworkMain.clientType == "Client")
         //{
