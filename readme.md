@@ -1,1 +1,4 @@
-Create this maven project with the archetypes/maven-archetype-webapp archetype
+# Inert Redemption
+
+# Current Version: 0.0.16a
+# Latst release version: N/A
