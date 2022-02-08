@@ -37,31 +37,31 @@ public class BasicMovement : MonoBehaviour
     {
         if (lv_playerController.inControl)
         {
-            if (transform.localPosition.x < -495)
-            {
-                lv_playerController.characterController.enabled = false;
-                transform.localPosition = new Vector3(495f, transform.localPosition.y, transform.localPosition.z);
-                lv_playerController.characterController.enabled = true;
-            }
-            if (transform.localPosition.x > 495f)
-            {
-                lv_playerController.characterController.enabled = false;
-                transform.localPosition = new Vector3(-495f, transform.localPosition.y, transform.localPosition.z);
-                lv_playerController.characterController.enabled = true;
+            //if (transform.localPosition.x < -495)
+            //{
+            //    lv_playerController.characterController.enabled = false;
+            //    transform.localPosition = new Vector3(495f, transform.localPosition.y, transform.localPosition.z);
+            //    lv_playerController.characterController.enabled = true;
+            //}
+            //if (transform.localPosition.x > 495f)
+            //{
+            //    lv_playerController.characterController.enabled = false;
+            //    transform.localPosition = new Vector3(-495f, transform.localPosition.y, transform.localPosition.z);
+            //    lv_playerController.characterController.enabled = true;
 
-            }
-            if (transform.localPosition.z < -495f)
-            {
-                lv_playerController.characterController.enabled = false;
-                transform.localPosition = new Vector3(transform.localPosition.x, transform.localPosition.y, 495f);
-                lv_playerController.characterController.enabled = true;
-            }
-            if (transform.localPosition.z > 495f)
-            {
-                lv_playerController.characterController.enabled = false;
-                transform.localPosition = new Vector3(transform.localPosition.x, transform.localPosition.y, -495f);
-                lv_playerController.characterController.enabled = true;
-            }
+            //}
+            //if (transform.localPosition.z < -495f)
+            //{
+            //    lv_playerController.characterController.enabled = false;
+            //    transform.localPosition = new Vector3(transform.localPosition.x, transform.localPosition.y, 495f);
+            //    lv_playerController.characterController.enabled = true;
+            //}
+            //if (transform.localPosition.z > 495f)
+            //{
+            //    lv_playerController.characterController.enabled = false;
+            //    transform.localPosition = new Vector3(transform.localPosition.x, transform.localPosition.y, -495f);
+            //    lv_playerController.characterController.enabled = true;
+            //}
 
             if (!NetworkMain.local && lv_playerController.canMove) PositionalUpdate();
 

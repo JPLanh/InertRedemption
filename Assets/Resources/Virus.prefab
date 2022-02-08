@@ -56,7 +56,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.5
-  far clip plane: 500
+  far clip plane: 1
   field of view: 60
   orthographic: 0
   orthographic size: 5
@@ -209,6 +209,7 @@ MonoBehaviour:
   movementController: {fileID: 5484121451179189523}
   crosshair: {fileID: 0}
   survivorsGO: {fileID: 0}
+  virusList: {fileID: 0}
   canvas: {fileID: 0}
   userProjectionAnimator: {fileID: 0}
   displayInterface: {fileID: 0}
