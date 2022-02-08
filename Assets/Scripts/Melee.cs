@@ -119,7 +119,7 @@ public class Melee : MonoBehaviour, UsableItemInterface, WeaponBaseInterface, IC
 
             if (target != null)
             {
-                target.damage(true, bladeAddon.damage, owner.gameObject);
+                target.isDamage(true, bladeAddon.damage, owner.gameObject);
                 owner.handAnimator.SetBool("isAttacking", false);
                 durabilityDamage(-5);
             }

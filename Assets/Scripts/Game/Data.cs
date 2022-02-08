@@ -58,13 +58,23 @@ public class Data : MonoBehaviour, Interactable, Displayable
                 Dictionary<string, string> payload = new Dictionary<string, string>();
                 payload["UID"] = UID;
                 payload["Action"] = "Pickup Item";
+                payload["Type"] = "Action";
+                NetworkMain.broadcastAction(payload);
+                //                Dictionary<string, string> payload = new Dictionary<string, string>();
+                //                payload["UID"] = UID;
+                //                payload["Action"] = "Pickup Item";
                 //print(StringUtils.convertPayloadToJson(payload));
-                NetworkMain.messageServer(payload);
-                Destroy(gameObject);
+                //                NetworkMain.messageServer(payload);
+//                Destroy(gameObject);
             }
         }
     }
 
+    public void pickupItem()
+    {
+        Destroy(gameObject);
+        EntityManager.loot.Remove(UID);
+    }
     public string display()
     {
         return resourceName;

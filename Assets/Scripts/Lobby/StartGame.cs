@@ -20,11 +20,12 @@ public class StartGame : MonoBehaviour
 
     public void OnClick()
     {
-        Dictionary<string, string> payload = StringUtils.getPayload();
-        payload["Action"] = "Begin Game";
-        payload["Mode"] = "Action";
-        SceneManager.LoadScene("mainScene");
-        NetworkMain.broadcastClients(payload);
+        Dictionary<string, string> payload = new Dictionary<string, string>();
+        payload.Add("LobbyID", NetworkMain.LobbyID);
+        payload.Add("Action", "Ready");
+        NetworkMain.broadcastAction(payload);
+//        SceneManager.LoadScene("mainScene");
+//        NetworkMain.broadcastClients(payload);
         //NetworkMain.socket.Emit("Lobby", StringUtils.convertPayloadToJson(payload));
     }
 

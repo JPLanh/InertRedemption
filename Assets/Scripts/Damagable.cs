@@ -4,5 +4,5 @@ using UnityEngine;
 
 public interface Damagable
 {
-    public GameObject damage(bool network, float getValue, GameObject attacker);
+    public GameObject isDamage(bool network, float getValue, GameObject attacker);
 }

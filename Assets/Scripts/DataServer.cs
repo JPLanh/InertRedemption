@@ -53,7 +53,7 @@ public class DataServer : MonoBehaviour, Damagable
     }
 
 
-    public GameObject damage(bool network, float getValue, GameObject attacker)
+    public GameObject isDamage(bool network, float getValue, GameObject attacker)
     {
         health += getValue;
         if (health <= 0)

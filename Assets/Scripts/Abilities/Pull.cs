@@ -62,7 +62,7 @@ public class Pull : MonoBehaviour, IAbilities
         while (leapTimer < abilityDuration)
         {
             other.transform.position = cubeBezier3(initPosition, initAnchorPosition, targetAnchorPosition, targetPosition, leapTimer / abilityDuration);
-            NetworkMain.updateEntityPosition(other.gameObject);
+            //NetworkMain.updateEntityPosition(other.gameObject);
             leapTimer += Time.deltaTime;
             yield return null;
         }

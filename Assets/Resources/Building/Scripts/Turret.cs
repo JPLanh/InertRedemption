@@ -18,8 +18,6 @@ public class Turret : MonoBehaviour, Damagable, Displayable, IBuilding, Interact
 
     [SerializeField]
     private Transform turretHead;
-    [SerializeField]
-    private Base team;
 
     [SerializeField]
     private float health;
@@ -127,7 +125,7 @@ public class Turret : MonoBehaviour, Damagable, Displayable, IBuilding, Interact
     }
 
 
-    public GameObject damage(bool network, float getValue, GameObject attacker)
+    public GameObject isDamage(bool network, float getValue, GameObject attacker)
     {
         durability += getValue;
 
