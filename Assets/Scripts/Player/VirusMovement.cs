@@ -57,14 +57,14 @@ public class VirusMovement : MonoBehaviour
                 // Move the controller, use this to help calculate to fire ahead
                 lv_playerController.characterController.Move(moveDirection * Time.deltaTime);
 
-            if (transform.localPosition.x < -495)
-                transform.localPosition = new Vector3(495f, transform.localPosition.y, transform.localPosition.z);
-            if (transform.localPosition.x > 495)
-                transform.localPosition = new Vector3(-495f, transform.localPosition.y, transform.localPosition.z);
-            if (transform.localPosition.z < -495)
-                transform.localPosition = new Vector3(transform.localPosition.x, transform.localPosition.y, 495f);
-            if (transform.localPosition.z > 495)
-                transform.localPosition = new Vector3(transform.localPosition.x, transform.localPosition.y, -495f);
+            //if (transform.localPosition.x < -495)
+            //    transform.localPosition = new Vector3(495f, transform.localPosition.y, transform.localPosition.z);
+            //if (transform.localPosition.x > 495)
+            //    transform.localPosition = new Vector3(-495f, transform.localPosition.y, transform.localPosition.z);
+            //if (transform.localPosition.z < -495)
+            //    transform.localPosition = new Vector3(transform.localPosition.x, transform.localPosition.y, 495f);
+            //if (transform.localPosition.z > 495)
+            //    transform.localPosition = new Vector3(transform.localPosition.x, transform.localPosition.y, -495f);
 
 
         }

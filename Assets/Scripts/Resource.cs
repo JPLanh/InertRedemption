@@ -16,6 +16,7 @@ public class Resource : MonoBehaviour, Damagable
     public float zRot;
     public float durability;
     [NonSerialized] public GameObject loot;
+    public AudioSource damageSound;
     public string resource;
     public int amount;
     public string lobbyID;
@@ -29,7 +30,16 @@ public class Resource : MonoBehaviour, Damagable
     // Update is called once per frame
     void Update()
     {
-        
+
+        if (durability <= 0 && !damageSound.isPlaying)
+        {
+            createLoot();
+            //Dictionary<string, string> payload = new Dictionary<string, string>();
+            //payload["UID"] = UID;
+            //payload["Action"] = "Destroy Resource";
+            //NetworkMain.broadcastAction(payload);
+            //
+        }
     }
 
     public GameObject isDamage(bool network, float getValue, GameObject attacker)
@@ -57,16 +67,8 @@ public class Resource : MonoBehaviour, Damagable
 
     public void damage(float getValue)
     {
+        damageSound.Play();
         durability += getValue;
-        if (durability <= 0)
-        {
-            createLoot();
-            //Dictionary<string, string> payload = new Dictionary<string, string>();
-            //payload["UID"] = UID;
-            //payload["Action"] = "Destroy Resource";
-            //NetworkMain.broadcastAction(payload);
-            //
-        }
     }
 
     private GameObject createLoot()
