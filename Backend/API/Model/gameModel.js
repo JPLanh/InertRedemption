@@ -1,7 +1,6 @@
 'use strict';
 var mongoose = require('mongoose'),
-	Schema = mongoose.Schema,
-	passportLocalMongoose = require('passport-local-mongoose');
+	Schema = mongoose.Schema;
 
 var user = new Schema({
 	username: {type: String},
@@ -72,8 +71,6 @@ var lobby = new Schema({
 	lobbyID: {type: String},
 	resourceLimit: {type: Number}
 });
-
-user.plugin(passportLocalMongoose);
 
 module.exports = mongoose.model("Item", item);
 module.exports = mongoose.model("Lobby", lobby);

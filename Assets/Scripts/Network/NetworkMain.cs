@@ -49,11 +49,12 @@ public class NetworkMain : MonoBehaviour
     #region QSocket implementation
     public static void joinGame(String username, String password, string in_action)
     {
-        socket = IO.Socket("http://35.212.249.77:26843");
 
+            socket = IO.Socket("http://35.212.249.77:26842");
         socket.On(QSocket.EVENT_CONNECT, () =>
         {
             isConnected = true;
+            Debug.Log("Connecting");
             try
             {
                 Dictionary<string, string> payload = new Dictionary<string, string>();

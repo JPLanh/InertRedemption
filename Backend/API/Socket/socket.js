@@ -9,12 +9,17 @@ const models = require('../Model/gameModel'),
 	currentTime = Date.now();
 
 module.exports = async function(socket){
+	socket.on("connect_error", (err) => {
+	  console.log(`connect_error due to ${err.message}`);
+	});
+
 	socket.on('connect', async (getSocket) => {
 		var message = {}
 
 		getSocket.on('Login', async (getPayload) => {
 			let param = JSON.parse(getPayload);
 			let payload = {};			
+			console.log(getPayload);
 			switch(param["Action"]){
 				case "Register":
 					await user.findOne({"username": param['Username']}).exec()
@@ -99,7 +104,8 @@ module.exports = async function(socket){
 								payload["Action"] = "Enter Game";
 								getSocket.emit("Action", payload);
 							} else {
-								console.log(getSocket.id + ' Denied connected as ' + param['Username']);
+								console.log(getSocket.id + ' Denied connected as ' + param['Username'] + " User Exists");
+								payload["Reason"] = "User Exists";
 								payload["Action"] = "Denied";
 								getSocket.emit("Action", payload);
 							}
@@ -110,15 +116,15 @@ module.exports = async function(socket){
 		});
 
 		getSocket.on('disconnecting', async () => {
-			player.findOne({"UserID": getSocket.id}).exec()
-			.then(async (getPlayer) => {
-				if (getPlayer != null){
-					await saveToFile(getPlayer["name"], getPlayer)
-					.then(async (getPlayer) => {
-						await player.deleteOne({"UserID": getSocket.id});
-					})
-				}
-			})
+			// player.findOne({"UserID": getSocket.id}).exec()
+			// .then(async (getPlayer) => {
+			// 	if (getPlayer != null){
+			// 		await saveToFile(getPlayer["name"], getPlayer)
+			// 		.then(async (getPlayer) => {
+			// 			await player.deleteOne({"UserID": getSocket.id});
+			// 		})
+			// 	}
+			// })
 			return 
 		});
 	
