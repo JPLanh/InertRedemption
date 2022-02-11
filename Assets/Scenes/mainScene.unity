@@ -5120,9 +5120,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e74d2a6712fe49c46947b6d7c901af9b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  time: 0.8
+  time: 0.35
   fullDayLength: 600
-  startTime: 0.8
+  startTime: 0.35
   noon: {x: 90, y: 0, z: 0}
   timeText: {fileID: 1140200168}
   sun: {fileID: 1769972743}

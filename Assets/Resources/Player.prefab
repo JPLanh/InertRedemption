@@ -690,6 +690,8 @@ MonoBehaviour:
   movementController: {fileID: 3944483436679000424}
   em: {fileID: 0}
   ifs: {fileID: 6822706958078688732}
+  movementTimer: 75
+  rotationTimer: 75
   canvas: {fileID: 0}
   userProjectionAnimator: {fileID: 576640461661461867}
   displayInterface: {fileID: 6821106647154117341}
@@ -821,6 +823,7 @@ MonoBehaviour:
   rotation: {x: 0, y: 0, z: 0}
   moveDirection: {x: 0, y: 0, z: 0}
   lead: {fileID: 0}
+  updateTimer: 75
   running_footstep: {fileID: 4223565847650142478}
   walking_footstep: {fileID: 6970715409705331844}
 --- !u!1 &2712385882797971900

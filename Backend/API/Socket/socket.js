@@ -19,7 +19,7 @@ module.exports = async function(socket){
 		getSocket.on('Login', async (getPayload) => {
 			let param = JSON.parse(getPayload);
 			let payload = {};			
-			console.log(getPayload);
+//			console.log(getPayload);
 			switch(param["Action"]){
 				case "Register":
 					await user.findOne({"username": param['Username']}).exec()
@@ -52,15 +52,17 @@ module.exports = async function(socket){
 					.then(async (get_login) => {
 						if (get_login != null){
 							payload["Action"] = "Welcome";
-							await lobby.findOne({}).exec()
-							.then(async (getLobby) => {
-								if (getLobby == null){
-									getLobby = await new lobby({"lobbyID": randomIDGen(5), "resourceLimit": 75, "hostID": param['Username']}).save();
-								}
-								payload["Server"] = getLobby['lobbyID'];
-								payload['Username'] = param['Username'];
-								payload['UserID'] = getSocket.id;
-							})
+							payload['Username'] = param['Username'];
+							payload['UserID'] = getSocket.id;
+						// 	await lobby.findOne({}).exec()
+						// 	.then(async (getLobby) => {
+						// 		if (getLobby == null){
+						// 			getLobby = await new lobby({"lobbyID": randomIDGen(5), "resourceLimit": 75, "hostID": param['Username']}).save();
+						// 		}
+						// 		payload["Server"] = getLobby['lobbyID'];
+						// 		payload['Username'] = param['Username'];
+						// 		payload['UserID'] = getSocket.id;
+						// 	})
 						} 
 						else {
 							console.log(getSocket.id + ' Denied connected as ' + param['Username'] + 'Reason: Bad Password');
@@ -71,36 +73,36 @@ module.exports = async function(socket){
 					getSocket.emit("Action", payload);
 					break;
 				case "Join":
-					getSocket.join(param['lobbyID']);
-					await lobby.findOne({"lobbyID": param['lobbyID']}).exec()
-					.then(async (getLobby) => {
-						let survivorTeam = player.countDocuments({"lobbyID": getLobby['lobbyID'], "Team": "Survivor"})
-						let virusTeam = player.countDocuments({"lobbyID": getLobby['lobbyID'], "Team": "Virus"})
-						return await Promise.all([getLobby, survivorTeam, virusTeam])
-					})
-					.then(async (result) => {
+					// getSocket.join(param['lobbyID']);
+					// await lobby.findOne({"lobbyID": param['lobbyID']}).exec()
+					// .then(async (getLobby) => {
+					// 	let survivorTeam = player.countDocuments({"lobbyID": getLobby['lobbyID'], "Team": "Survivor"})
+					// 	let virusTeam = player.countDocuments({"lobbyID": getLobby['lobbyID'], "Team": "Virus"})
+					// 	return await Promise.all([getLobby, survivorTeam, virusTeam])
+					// })
+					// .then(async (result) => {
 						player.findOne({"name": param['Username']}).exec()
 						.then(async (findPlayer) =>{
 							if (findPlayer == null){
 								payload['Username'] = param['Username'];
 								payload['UserID'] = getSocket.id;
-								payload['lobbyID'] = result[0]['lobbyID'];
 								getSocket.nickname = param['Username'];
-								if (result[0]['hostID'] == param['Username'])
-								{
-									new player({"UserID": getSocket.id, "health": 100, "lobbyID": result[0]['lobbyID'], "Team": payload['Team'], "host": true, "name": param['Username']}).save();
-								}
-								else 
-								{
-									player.findOne({"lobbyID": result[0]['lobbyID'], "host": true}).exec()
-									.then(async (findHost) => {
-										// console.log("Host:" + JSON.stringify(findHost));
-										if (findHost == null)
-											new player({"UserID": getSocket.id, "health": 100, "lobbyID": result[0]['lobbyID'], "Team": payload['Team'], "host": true, "name": param['Username']}).save();
-										else 
-											new player({"UserID": getSocket.id, "health": 100, "lobbyID": result[0]['lobbyID'], "Team": payload['Team'], "host": false, "name": param['Username']}).save();
-									});
-								}
+								new player({"UserID": getSocket.id, "health": 100, "Team": payload['Team'], "host": true, "name": param['Username']}).save();
+								// if (result[0]['hostID'] == param['Username'])
+								// {
+								// }
+								// else 
+								// {
+								// 	player.findOne({"lobbyID": result[0]['lobbyID'], "host": true}).exec()
+								// 	.then(async (findHost) => {
+								// 		// console.log("Host:" + JSON.stringify(findHost));
+								// 		if (findHost == null)
+								// 			new player({"UserID": getSocket.id, "health": 100, "lobbyID": result[0]['lobbyID'], "Team": payload['Team'], "host": true, "name": param['Username']}).save();
+								// 		else 
+								// 			new player({"UserID": getSocket.id, "health": 100, "lobbyID": result[0]['lobbyID'], "Team": payload['Team'], "host": false, "name": param['Username']}).save();
+								// 	});
+								// }
+								getSocket.join("Lobby-Main");
 								payload["Action"] = "Enter Game";
 								getSocket.emit("Action", payload);
 							} else {
@@ -110,21 +112,22 @@ module.exports = async function(socket){
 								getSocket.emit("Action", payload);
 							}
 						});
-					})
+					// })
 					break;
 			}
 		});
 
 		getSocket.on('disconnecting', async () => {
-			// player.findOne({"UserID": getSocket.id}).exec()
-			// .then(async (getPlayer) => {
-			// 	if (getPlayer != null){
-			// 		await saveToFile(getPlayer["name"], getPlayer)
-			// 		.then(async (getPlayer) => {
-			// 			await player.deleteOne({"UserID": getSocket.id});
-			// 		})
-			// 	}
-			// })
+			player.findOne({"UserID": getSocket.id}).exec()
+			.then(async (getPlayer) => {
+				if (getPlayer != null){
+						await player.deleteOne({"UserID": getSocket.id});
+					// await saveToFile(getPlayer["name"], getPlayer)
+					// .then(async (getPlayer) => {
+					// 	await player.deleteOne({"UserID": getSocket.id});
+					// })
+				}
+			})
 			return 
 		});
 	
@@ -135,13 +138,14 @@ module.exports = async function(socket){
 		getSocket.on("Reply", async (payload) => {
 			let param = JSON.parse(payload);
 			let data = JSON.parse(param["data"]);
-			console.log(param);
+//			console.log(param);
 			socket.to(param["target"]).emit('Reply', payload.replace(/"/g, "`"))
 
 		})
 
 		getSocket.on("Broadcast", async (payload) => {
-			let param = JSON.parse(payload);
+			let param = JSON.parse(payload);			
+//			console.log(payload);
 			socket.in(param['lobbyID']).emit('Broadcast', payload.replace(/"/g, "`"));
 		});
 
@@ -153,13 +157,27 @@ module.exports = async function(socket){
 		getSocket.on("Server", async (payload) => {
 			let param = JSON.parse(payload);
 			let data = JSON.parse(param["data"])
+			let payload_template = {};
+			payload_template["source"] = "";
+			payload_template["data"] = "";
+			payload_template["target"] = "";
+			let payloadData = {};
+//			console.log(param);
 
 			switch(data["Action"]){
+				case "Get Lobby List":
+					let roomPayload = {};
+					await Object.keys(socket.sockets.adapter.rooms).forEach(async (it_key) => {
+						if (it_key.includes("Lobby")){
+							roomPayload[it_key] = it_key;
+						}
+					})
+					payload_template["data"] = roomPayload;
+					roomPayload["Action"] = "Get All Lobbies";
+					roomPayload["Type"] = "Action";
+					getSocket.emit('Broadcast', JSON.stringify(payload_template).replace(/"/g, "`"));					
+				break;
 				case "Enter Game":
-					let payload_template = {};
-					payload_template["source"] = "";
-					payload_template["data"] = "";
-					payload_template["target"] = "";
 
 //					console.log(socket.sockets.adapter.rooms);
 					for(let resourceID = 0; resourceID < 2; resourceID++){
@@ -177,16 +195,55 @@ module.exports = async function(socket){
 						}
 					}
 
-					let payloadData = {};
 					payloadData["Action"] = "Resource Loaded";
 					payloadData["Type"] = "Action";
 					payload_template["data"] = payloadData;
 					socket.in(data['lobbyID']).emit('Broadcast', JSON.stringify(payload_template).replace(/"/g, "`"));
 					break;
+				case "Join Lobby":
+					if ("Lobby-"+data["Name"] in socket.sockets.adapter.rooms){
+						let new_room = "Lobby-"+data["Name"];
+						getSocket.leave(param["lobbyID"]);
+						getSocket.join(new_room);
+						payloadData["LobbyID"] = new_room;
+						payloadData["Action"] = "Lobby Join";
+					} else {
+						payloadData["Reason"] = "Lobby does not exists";
+						payloadData["Action"] = "Denied Lobby Join";
+					}
+					payloadData["Type"] = "Action";
+					payload_template["data"] = payloadData;
+					getSocket.emit('Broadcast', JSON.stringify(payload_template).replace(/"/g, "`"));
+					break;						
 				case "Create Lobby":
-					let new_room = "Lobby_" + randomIDGen(12);
-					getSocket.join(new_room);
-					break;				
+					// await lobby.findOne({"lobbyID": "Lobby-"+data["Name"]}).exec()
+					// .then(async (getLobby) => {
+						// if (getLobby != null){
+						if ("Lobby-"+data["Name"] in socket.sockets.adapter.rooms){
+							payloadData["Reason"] = "Lobby name exists";
+							payloadData["Action"] = "Denied Lobby Creation";
+						} else {
+							//await new lobby({"lobbyID": "Lobby-"+data["Name"], "hostID": getSocket.nickname}).save();
+							let new_room = "Lobby-"+data["Name"];
+							getSocket.leave(param["lobbyID"]);
+							getSocket.join(new_room);
+							payloadData["LobbyID"] = new_room;
+							payloadData["Action"] = "Lobby Created";
+						}
+						payloadData["Type"] = "Action";
+						payload_template["data"] = payloadData;
+						getSocket.emit('Broadcast', JSON.stringify(payload_template).replace(/"/g, "`"));
+					// })
+					break;
+				case "Leave Lobby":				
+					getSocket.join("Lobby-Main");
+					getSocket.leave(data["Name"]);
+					payloadData["LobbyID"] = data["Name"]
+					payloadData["Type"] = "Action";
+					payloadData["Action"] = "Lobby Left";
+					payload_template["data"] = payloadData;
+					getSocket.emit('Broadcast', JSON.stringify(payload_template).replace(/"/g, "`"));
+					break;
 			}
 		})
 	});

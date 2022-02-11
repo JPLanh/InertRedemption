@@ -25,9 +25,9 @@ public class WeaponBase : MonoBehaviour
         if (attackAnimator.GetBool("isAttacking"))
         {
             Dictionary<string, string> payload = new Dictionary<string, string>();
-            Damagable target = null;
-            if (other.transform.parent != null) target = other.transform.parent.transform.GetComponent<Damagable>();
-            if (target == null) target = other.transform.GetComponent<Damagable>();
+            IDamagable target = null;
+            if (other.transform.parent != null) target = other.transform.parent.transform.GetComponent<IDamagable>();
+            if (target == null) target = other.transform.GetComponent<IDamagable>();
 
             if (target != null)
             {

@@ -75,7 +75,7 @@ public class NetworkMain : MonoBehaviour
 
         socket.On("Broadcast", (getData) =>
         {
-//            Debug.Log($"Broadcast 1: {getData.ToString().Replace('`', '\"').Replace("\\", string.Empty).Replace("\"{", "{").Replace("}\"", "}")}");
+//                        Debug.Log($"Broadcast 1: {getData.ToString().Replace('`', '\"').Replace("\\", string.Empty).Replace("\"{", "{").Replace("}\"", "}")}");
             Payload lv_payload = JsonConvert.DeserializeObject<Payload>(getData.ToString()
                 .Replace('`', '\"')
                 .Replace("\\", string.Empty)
@@ -210,6 +210,7 @@ public class NetworkMain : MonoBehaviour
     {
             Dictionary<string, string> networkPayload = new Dictionary<string, string>();
             networkPayload["source"] = UserID;
+            networkPayload["lobbyID"] = NetworkMain.LobbyID;
             networkPayload["data"] = StringUtils.convertPayloadToJson(getPayload);
             networkPayload["target"] = getTarget;
             socket.Emit("Server", StringUtils.convertPayloadToJson(networkPayload));

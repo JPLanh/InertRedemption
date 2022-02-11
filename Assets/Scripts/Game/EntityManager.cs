@@ -260,19 +260,6 @@ public class EntityManager : MonoBehaviour
                 newPlayer.TryGetComponent<PlayerController>(out out_playerController);
                 break;
         }
-        //out_playerController.teamColor = in_team;
-        //out_playerController.survivorsGO = redTeamPlaceHolder;
-        //switch (in_team)
-        //{
-        //    case "Red":
-        //        EntityManager.redTeam.Add(getName, out_playerController);
-        //        newPlayer.GetComponent<LivingBeing>().survivorList = redTeamPlaceHolder.survivorList;
-        //        break;
-        //    case "Blue":
-        //        EntityManager.blueTeam.Add(getName, out_playerController);
-        //        newPlayer.GetComponent<LivingBeing>().survivorList = blueTeamPlaceHolder.survivorList;
-        //        break;
-        //}
 
         payload["Action"] = "Join";
         payload["Team"] = in_team;
@@ -318,11 +305,11 @@ public class EntityManager : MonoBehaviour
     //    GO.transform.SetParent(itemList.transform);
     //}
 
-    private void loadAllResources()
-    {
-        foreach(KeyValuePair<string, ResourceEntity> it_resource in resourcesLoad)
-        {
-            loadResources(it_resource.Value);
-        }
-    }
+    //private void loadAllResources()
+    //{
+    //    foreach(KeyValuePair<string, ResourceEntity> it_resource in resourcesLoad)
+    //    {
+    //        loadResources(it_resource.Value);
+    //    }
+    //}
 }

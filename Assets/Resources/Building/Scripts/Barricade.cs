@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Barricade : MonoBehaviour, Damagable, Displayable, IBuilding
+public class Barricade : MonoBehaviour, IDamagable, Displayable, IBuilding
 {
     public Node currentNode;
     public string harvestTarget = "Electricity";

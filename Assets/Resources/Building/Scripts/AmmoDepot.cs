@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AmmoDepot : MonoBehaviour, Damagable, Displayable, IBuilding, Interactable, ISubscribers
+public class AmmoDepot : MonoBehaviour, IDamagable, Displayable, IBuilding, Interactable, ISubscribers
 {
     public Node currentNode;
     public string harvestTarget = "Electricity";

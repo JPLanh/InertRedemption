@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class VirusBody : MonoBehaviour, Damagable
+public class VirusBody : MonoBehaviour
 {
     public float health;
     public float speed;
@@ -30,34 +30,34 @@ public class VirusBody : MonoBehaviour, Damagable
 
     }
 
-    public GameObject isDamage(bool network, float getValue, GameObject attacker)
-    {
-        if (NetworkMain.local)
-        {
-            health += getValue;
-            damageCheck();
-        }
-        else
-        {
-            if (!network)
-            {
-                health = getValue;
-                damageCheck();
-            }
-            else
-            {
-                Dictionary<string, string> payload = new Dictionary<string, string>();
-                payload["Target"] = gameObject.name;
-                payload["damage"] = StringUtils.convertFloatToString(getValue);
-                payload["Action"] = "Damage Living";
-                //NetworkMain.messageServer(payload);
-            }
-        }
+    //public GameObject isDamage(bool network, float getValue, GameObject attacker)
+    //{
+    //    if (NetworkMain.local)
+    //    {
+    //        health += getValue;
+    //        damageCheck();
+    //    }
+    //    else
+    //    {
+    //        if (!network)
+    //        {
+    //            health = getValue;
+    //            damageCheck();
+    //        }
+    //        else
+    //        {
+    //            Dictionary<string, string> payload = new Dictionary<string, string>();
+    //            payload["Target"] = gameObject.name;
+    //            payload["damage"] = StringUtils.convertFloatToString(getValue);
+    //            payload["Action"] = "Damage Living";
+    //            //NetworkMain.messageServer(payload);
+    //        }
+    //    }
 
-        health += getValue;
-        return null;
-        //        print(this);
-    }
+    //    health += getValue;
+    //    return null;
+    //    //        print(this);
+    //}
 
     private void damageCheck()
     {

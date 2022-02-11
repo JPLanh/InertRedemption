@@ -22,6 +22,8 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
     public BasicMovement movementController;
     public EntityManager em;
     public InfectionScript ifs;
+    public float movementTimer;
+    public float rotationTimer;
 
     public PlayerCanvas canvas;
     public Animator userProjectionAnimator;
@@ -1136,9 +1138,9 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
 
             livingBeing.legsAnimator.SetBool("Running", true);
             movementController.playMovementSound();
-            StartCoroutine(LerpPosition(StringUtils.getVectorFromJson(payload, "Pos"), (1f / 30f)));
+            StartCoroutine(LerpPosition(StringUtils.getVectorFromJson(payload, "Pos"), (1f / movementTimer)));
             Quaternion newAngle = Quaternion.Euler(0f, float.Parse(payload["yRot"]), 0f);
-            StartCoroutine(LerpRotation(transform.rotation, newAngle, (1f / 30f)));
+            StartCoroutine(LerpRotation(transform.rotation, newAngle, (1f / rotationTimer)));
         }
         else
         {
@@ -1155,7 +1157,7 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
         while (time < duration)
         {
             transform.position = Vector3.Lerp(startPosition, targetPosition, time / duration);
-            time += Time.deltaTime;
+            time += Time.deltaTime/2;
             yield return null;
         }
         transform.position = targetPosition;
@@ -1169,7 +1171,7 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
         while (time < duration)
         {
             transform.rotation = Quaternion.Lerp(transform.rotation, targetPosition, time / duration);
-            time += Time.deltaTime;
+            time += Time.deltaTime/2;
             yield return null;
         }
         transform.rotation = targetPosition;

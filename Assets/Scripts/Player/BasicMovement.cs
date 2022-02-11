@@ -12,10 +12,11 @@ public class BasicMovement : MonoBehaviour
     public GameObject lead;
 
     private float lastUpdate = 0;
-    private float lookXLimit = 50.0f;
+    private float lookXLimit = 45.0f;
     private Vector3 hitNormal;
     private float slopeLimit = 60f;
     private float slideSpeed = 6f;
+    public float updateTimer;
 
 
     public AudioSource running_footstep;
@@ -153,7 +154,7 @@ public class BasicMovement : MonoBehaviour
             payload["health"] = lv_playerController.livingBeing.health.ToString();
 //            payload["host"] = NetworkMain.isHost.ToString();
 
-            lastUpdate = Time.time + 1f / 60f;
+            lastUpdate = Time.time + 1f / updateTimer;
             NetworkMain.broadcastAction(payload);
             //            NetworkMain.socket.Emit("Update", StringUtils.convertPayloadToJson(payload));
         }
