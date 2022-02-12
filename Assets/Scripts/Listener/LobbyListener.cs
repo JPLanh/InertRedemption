@@ -38,12 +38,17 @@ public class LobbyListener : MonoBehaviour
 //        addNewPlayer(NetworkMain.UserID, NetworkMain.Username, "Main Lobby");
         updateLobbyFilter();
     }
+
+    void OnApplicationQuit()
+    {
+        leaveLobby();
+    }
+
     private void updateLobbyFilter()
     {
         Dictionary<string, string> payload = new Dictionary<string, string>();
         payload.Add("Username", NetworkMain.Username);
         payload.Add("UserID", NetworkMain.UserID);
-        payload.Add("Team", NetworkMain.Team);
         payload.Add("Type", "Action");
 
         switch (NetworkMain.LobbyID)
@@ -62,6 +67,7 @@ public class LobbyListener : MonoBehaviour
                 {
                     Destroy(it_child.gameObject);
                 }
+                payload.Add("Team", "Main Lobby");
                 payload.Add("Action", "Get Main Lobby Users");
                 addNewPlayer(NetworkMain.UserID, NetworkMain.Username, "Main Lobby");
                 mainLobbyList.parent.gameObject.SetActive(true);
@@ -78,6 +84,7 @@ public class LobbyListener : MonoBehaviour
                 }
                 allPlayers.Clear();
                 addNewPlayer(NetworkMain.UserID, NetworkMain.Username, "Survivor");
+                payload.Add("Team", NetworkMain.Team);
                 payload.Add("Action", "Get Lobby Users");
                 break;
         }
@@ -118,6 +125,7 @@ public class LobbyListener : MonoBehaviour
                         addNewPlayer(getPayload.data["UserID"], getPayload.data["Username"], "Main Lobby");
                         payload.Add("Action", "Main Lobby");
                         NetworkMain.replyAction(payload, getPayload.data["UserID"]);
+//                        StartCoroutine(refreshList());
                         //                        serverResponse.Enqueue(lv_payload);
                     }
                     break;
@@ -131,33 +139,38 @@ public class LobbyListener : MonoBehaviour
                         addNewPlayer(getPayload.data["UserID"], getPayload.data["Username"], getPayload.data["Team"]);
                         payload.Add("Action", "In Lobby");
                         NetworkMain.replyAction(payload, getPayload.data["UserID"]);
-//                        serverResponse.Enqueue(lv_payload);
+  //                      StartCoroutine(refreshList());
+                        //                        serverResponse.Enqueue(lv_payload);
                     }
                     break;
                 case "Leave Lobby User":
                     if (!getPayload.source.Equals(NetworkMain.UserID))
                     {
-                        Debug.Log($"{getPayload.source} wants to join {NetworkMain.LobbyID} in team {getPayload.data["Team"]}");
+//                        Debug.Log($"{getPayload.source} wants to leave {NetworkMain.LobbyID} in team {getPayload.data["Team"]}");
                         switch (NetworkMain.LobbyID)
                         {
                             case "Lobby-Main":
+                                Destroy(allPlayers[getPayload.source].gameObject);
                                 allPlayers.Remove(getPayload.source);
                                 break;
                             default:
                                 switch (getPayload.data["Team"])
                                 {
                                     case "Survivor":
+                                        Destroy(survivorPlayers[getPayload.source].gameObject);
                                         survivorPlayers.Remove(getPayload.source);
                                         break;
                                     case "Virus":
+                                        Destroy(virusPlayers[getPayload.source].gameObject);
                                         virusPlayers.Remove(getPayload.source);
                                         break;
                                 }
-                                allPlayers.Remove(getPayload.source);
+                                //Destroy(allPlayers[getPayload.source].gameObject);
+                                //allPlayers.Remove(getPayload.source);
                                 break;
 
                         }
-                        StartCoroutine(refreshList());
+    //                    StartCoroutine(refreshList());
                     }
                     break;
                 case "Main Lobby":
@@ -183,9 +196,15 @@ public class LobbyListener : MonoBehaviour
                     break;
                 case "Lobby Created":
                     changeLobby(getPayload.data["LobbyID"]);
-                    NetworkMain.Team = "Survivor";
                     //NetworkMain.LobbyID = getPayload.data["LobbyID"];
                     //chatField.text += $"Now Creating {getPayload.data["LobbyID"].Replace("Lobby-", "")}...\n";
+                    //enterLobby();
+                    //updateLobbyFilter();
+                    break;
+                case "Lobby Left":
+                    changeLobby("Lobby-Main");
+                    //NetworkMain.LobbyID = "Lobby-Main";
+                    //chatField.text += $"Now leaving the Main lobby...\n";
                     //enterLobby();
                     //updateLobbyFilter();
                     break;
@@ -193,18 +212,9 @@ public class LobbyListener : MonoBehaviour
                     lv_toast.newNotification(getPayload.data["Reason"]);
                     break;
                 case "Lobby Join":
-                    NetworkMain.Team = "Survivor";
                     changeLobby(getPayload.data["LobbyID"]);
                     //NetworkMain.LobbyID = getPayload.data["LobbyID"];
                     //chatField.text += $"Now Joining {getPayload.data["LobbyID"].Replace("Lobby-", "")}...\n";
-                    //enterLobby();
-                    //updateLobbyFilter();
-                    break;
-                case "Lobby Left":
-                    NetworkMain.Team = "Main Lobby";
-                    changeLobby("Lobby-Main");
-                    //NetworkMain.LobbyID = "Lobby-Main";
-                    //chatField.text += $"Now leaving the Main lobby...\n";
                     //enterLobby();
                     //updateLobbyFilter();
                     break;
@@ -213,56 +223,56 @@ public class LobbyListener : MonoBehaviour
     }
 
 
-    IEnumerator refreshList()
-    {
-        switch (NetworkMain.LobbyID)
-        {
-            case "Lobby-Main":
-                foreach (Transform it_child in mainLobbyList)
-                {
-                    Destroy(it_child.gameObject);
-                }
+    //IEnumerator refreshList()
+    //{
+    //    switch (NetworkMain.LobbyID)
+    //    {
+    //        case "Lobby-Main":
+    //            int counter = 0;
+    //            foreach (KeyValuePair<string, PlayerLobbyStatus> it_player in allPlayers)
+    //            {
+    //                it_player.Value.transform
+    //            }
+    //            break;
+    //        default:
+    //            foreach (Transform it_child in survivorList)
+    //            {
+    //                Destroy(it_child.gameObject);
+    //            }
 
-                while (mainLobbyList.childCount != 0)
-                {
-                    yield return null;
-                }
+    //            foreach (Transform it_child in virusList)
+    //            {
+    //                Destroy(it_child.gameObject);
+    //            }
+    //            while (survivorList.childCount != 0 && virusList.childCount != 0)
+    //            {
+    //                yield return null;
+    //            }
 
-                foreach (KeyValuePair<string, PlayerLobbyStatus> it_player in allPlayers)
-                {
-                    addNewPlayer(it_player.Value);
-                }
-                break;
-            default:
-                foreach (Transform it_child in survivorList)
-                {
-                    Destroy(it_child.gameObject);
-                }
-
-                foreach (Transform it_child in virusList)
-                {
-                    Destroy(it_child.gameObject);
-                }
-                while (survivorList.childCount != 0 && virusList.childCount != 0)
-                {
-                    yield return null;
-                }
-
-                foreach (KeyValuePair<string, PlayerLobbyStatus> it_player in survivorList)
-                {
-                    addNewPlayer(it_player.Value);
-                }
-                foreach (KeyValuePair<string, PlayerLobbyStatus> it_player in virusList)
-                {
-                    addNewPlayer(it_player.Value);
-                }
-                break;
-        }
-    }
+    //            foreach (KeyValuePair<string, PlayerLobbyStatus> it_player in survivorList)
+    //            {
+    //                addNewPlayer(it_player.Value);
+    //            }
+    //            foreach (KeyValuePair<string, PlayerLobbyStatus> it_player in virusList)
+    //            {
+    //                addNewPlayer(it_player.Value);
+    //            }
+    //            break;
+    //    }
+    //}
 
     private void changeLobby(string in_lobby_name)
     {
         leaveLobby();
+        switch (NetworkMain.LobbyID)
+        {
+            case "Lobby-Main":
+                NetworkMain.Team = "Main Lobby";
+                break;
+            default:
+                NetworkMain.Team = "Survivor";
+                break;
+        }
         NetworkMain.LobbyID = in_lobby_name;
         chatField.text += $"Now entering {in_lobby_name.Replace("Lobby-", "")}...\n";
         updateLobbyFilter();
@@ -289,17 +299,17 @@ public class LobbyListener : MonoBehaviour
         {
             case "Main Lobby":
                 lv_player.transform.SetParent(mainLobbyList);
-                lv_player.GetComponent<RectTransform>().anchoredPosition = new Vector3(0f, -50f - (allPlayers.Count * 35f), 0f);
+                lv_player.GetComponent<RectTransform>().anchoredPosition = new Vector3(0f, -50f - ((mainLobbyList.childCount-1) * 35f), 0f);
                 allPlayers.Add(in_UID, lv_playerLobbyStatus);
                 break;
             case "Survivor":
                 lv_player.transform.SetParent(survivorList);
-                lv_player.GetComponent<RectTransform>().anchoredPosition = new Vector3(0f, -50f - (survivorPlayers.Count * 35f), 0f);
+                lv_player.GetComponent<RectTransform>().anchoredPosition = new Vector3(0f, -50f - ((survivorList.childCount-1) * 35f), 0f);
                 survivorPlayers.Add(in_UID, lv_playerLobbyStatus);
                 break;
             case "Virus":
                 lv_player.transform.SetParent(virusList);
-                lv_player.GetComponent<RectTransform>().anchoredPosition = new Vector3(0f, -50f - (virusPlayers.Count * 35f), 0f);
+                lv_player.GetComponent<RectTransform>().anchoredPosition = new Vector3(0f, -50f - ((virusList.childCount-1) * 35f), 0f);
                 virusPlayers.Add(in_UID, lv_playerLobbyStatus);
                 break;
         }
@@ -313,6 +323,7 @@ public class LobbyListener : MonoBehaviour
     {
         GameObject lv_player = Instantiate(Resources.Load<GameObject>("Player Lobby Status"));
         lv_player.TryGetComponent<PlayerLobbyStatus>(out PlayerLobbyStatus lv_playerLobbyStatus);
+        Debug.Log(in_player.team);
         lv_playerLobbyStatus.init(in_player);
         switch (in_player.team)
         {
@@ -378,17 +389,29 @@ public class LobbyListener : MonoBehaviour
       
     public void managePlayerList()
     {
+
         int counter = 0;
-        foreach(KeyValuePair<string, PlayerLobbyStatus> it_player in survivorPlayers)
+        if (NetworkMain.LobbyID.Equals("Lobby-Main"))
         {
-            it_player.Value.GetComponent<RectTransform>().anchoredPosition = new Vector3(0f, -35f - (counter * 35f), 0f);
-            counter += 1;
-        }
-        counter = 0;
-        foreach (KeyValuePair<string, PlayerLobbyStatus> it_player in virusPlayers)
+            counter = 0;
+            foreach (KeyValuePair<string, PlayerLobbyStatus> it_player in allPlayers)
+            {
+                it_player.Value.GetComponent<RectTransform>().anchoredPosition = new Vector3(0f, -50f - (counter * 35f), 0f);
+                counter += 1;
+            }
+        } else
         {
-            it_player.Value.GetComponent<RectTransform>().anchoredPosition = new Vector3(0f, -35f - (counter * 35f), 0f);
-            counter += 1;
+            foreach (KeyValuePair<string, PlayerLobbyStatus> it_player in survivorPlayers)
+            {
+                it_player.Value.GetComponent<RectTransform>().anchoredPosition = new Vector3(0f, -50f - (counter * 35f), 0f);
+                counter += 1;
+            }
+            counter = 0;
+            foreach (KeyValuePair<string, PlayerLobbyStatus> it_player in virusPlayers)
+            {
+                it_player.Value.GetComponent<RectTransform>().anchoredPosition = new Vector3(0f, -50f - (counter * 35f), 0f);
+                counter += 1;
+            }
         }
     }
 
