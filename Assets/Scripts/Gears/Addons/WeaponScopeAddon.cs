@@ -67,4 +67,10 @@ public class WeaponScopeAddon : MonoBehaviour, IAddon
 
         return "Range: " + range + " + 25 \n ";
     }
+
+    public void setLevel(int in_level)
+    {
+        range = 25f * in_level;
+        addonLevel = in_level;
+    }
 }

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 using UnityEngine;
 
 public class PlayerCanvas : MonoBehaviour
@@ -16,6 +17,9 @@ public class PlayerCanvas : MonoBehaviour
     public LightIndicator lightIndicator;
     public LightIndicator ammoIndicator;
     public LightIndicator energyIndicator;
+
+    public int countDownTimer = 10;
+    private string displayText;
 
     public bool shop = false;
 
@@ -40,6 +44,7 @@ public class PlayerCanvas : MonoBehaviour
     public void initLoadingScreen(string in_loading)
     {
         loadingUI.gameObject.SetActive(true);
+        displayText = in_loading;
         loadingUI.loading(in_loading);
         lead.GetComponent<CharacterController>().enabled = false;
     }
@@ -49,5 +54,35 @@ public class PlayerCanvas : MonoBehaviour
         loadingUI.unload();
         loadingUI.gameObject.SetActive(false);
         lead.GetComponent<CharacterController>().enabled = true;
+    }
+    public void gameOver()
+    {
+        StartCoroutine(countDown());
+    }
+
+    IEnumerator countDown()
+    {
+        while (true)
+        {
+            loadingUI.loading(displayText + " ... " + countDownTimer);
+
+            if (countDownTimer == 0)
+            {
+                Dictionary<string, string> payload = new Dictionary<string, string>();
+                payload["Action"] = "Leave Lobby";
+                payload["Name"] = NetworkMain.LobbyID;
+                payload["Type"] = "Action";
+                NetworkMain.serverAction(payload);
+                Cursor.lockState = CursorLockMode.None;
+                NetworkMain.payloadStack.Clear();
+                EntityManager.survivors.Clear();
+                EntityManager.virus.Clear();
+                EntityManager.players.Clear();
+                SceneManager.LoadScene("Lobby");
+            }
+            countDownTimer -= 1;
+            yield return new WaitForSeconds(1);
+        }
+
     }
 }

@@ -194,6 +194,7 @@ public class EntityManager : MonoBehaviour
             out_playerController.networkListener.controller = out_playerController;
             NetworkMain.payloadStack.Add(payload["UserID"], out_playerController.networkListener);
             out_playerController.em = this;
+            out_playerController.canvas = lv_canvas;
             survivors.Add(payload["UserID"], out_playerController);
             out_playerController.emitSound("Heartbeat", false);
             players.Add(payload["UserID"], out_playerController);
@@ -216,6 +217,7 @@ public class EntityManager : MonoBehaviour
             players.Add(payload["UserID"], out_virusController);
             out_virusController.networkListener = new PlayerNetworkListener(payload["Username"]);
             out_virusController.networkListener.controller = out_virusController;
+            out_virusController.canvas = lv_canvas;
             out_virusController.virusList = virusList;
             NetworkMain.payloadStack.Add(payload["UserID"], out_virusController.networkListener);
             out_virusController.em = this;
@@ -284,15 +286,19 @@ public class EntityManager : MonoBehaviour
     //    newNode.transform.SetParent(resourceList.transform);
     //}
 
-    public void loadResources(ResourceEntity in_resource)
+    public void loadResources()
     {
-        GameObject newNode = Instantiate(Resources.Load<GameObject>(in_resource.resource), resourceList.transform);
-        newNode.TryGetComponent<Resource>(out Resource out_resource);
-        out_resource.UID = in_resource.UID;
-        out_resource.resource = in_resource.resource;
-        resources.Add(in_resource.UID, out_resource);
-        newNode.name = in_resource.UID;
-        newNode.transform.localPosition = new Vector3(in_resource.xPos, 0, in_resource.yPos);
+        foreach(KeyValuePair<string, ResourceEntity> it_resource in resourcesLoad)
+        {
+            GameObject newNode = Instantiate(Resources.Load<GameObject>(it_resource.Value.resource), resourceList.transform);
+            newNode.TryGetComponent<Resource>(out Resource out_resource);
+            out_resource.UID = it_resource.Value.UID;
+            out_resource.resource = it_resource.Value.resource;
+            resources.Add(it_resource.Value.UID, out_resource);
+            newNode.name = it_resource.Value.UID;
+            newNode.transform.localPosition = new Vector3(it_resource.Value.xPos, 0, it_resource.Value.yPos);
+
+        }
     }
 
     //public void spawnItem(Dictionary<string, string> payload)

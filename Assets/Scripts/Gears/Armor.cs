@@ -7,6 +7,9 @@ public class Armor : MonoBehaviour, IArmor, IEquipment
     [SerializeField]
     private string partName;
     public GameObject components;
+    [SerializeField] BodyResilientAddon bodyResilientAddon;
+    [SerializeField] IronWillAddon ironWillAddon;
+    [SerializeField] AntibodyDevelopmentAddon antibodyDevelopmentAddon;
 
     public string getName()
     {
@@ -28,9 +31,9 @@ public class Armor : MonoBehaviour, IArmor, IEquipment
     public List<IAddon> getAllAddons()
     {
         List<IAddon> listOfAddons = new List<IAddon>();
-        //listOfAddons.Add(chamberAddon);
-        //listOfAddons.Add(muzzleAddon);
-        //listOfAddons.Add(magazineAddon);
+//        listOfAddons.Add(bodyResilientAddon);
+//        listOfAddons.Add(ironWillAddon);
+//        listOfAddons.Add(antibodyDevelopmentAddon);
         return listOfAddons;
     }
 }

@@ -38,7 +38,7 @@ public class NetworkMain : MonoBehaviour
     }
     public static void disconnect()
     {
-        if (!local && socket != null) socket.Disconnect();
+        if (socket != null) socket.Disconnect();
     }
 
     void Start()
@@ -75,7 +75,7 @@ public class NetworkMain : MonoBehaviour
 
         socket.On("Broadcast", (getData) =>
         {
-//                        Debug.Log($"Broadcast 1: {getData.ToString().Replace('`', '\"').Replace("\\", string.Empty).Replace("\"{", "{").Replace("}\"", "}")}");
+//            Debug.Log($"Broadcast 1: {getData.ToString().Replace('`', '\"').Replace("\\", string.Empty).Replace("\"{", "{").Replace("}\"", "}")}");
             Payload lv_payload = JsonConvert.DeserializeObject<Payload>(getData.ToString()
                 .Replace('`', '\"')
                 .Replace("\\", string.Empty)
@@ -89,10 +89,12 @@ public class NetworkMain : MonoBehaviour
                     serverResponse.Enqueue(lv_payload);
                     break;
                 case "Player Update":
-                    payloadStack[lv_payload.source].positionQueue.Push(lv_payload);
+                    if (payloadStack.ContainsKey(lv_payload.source))
+                        payloadStack[lv_payload.source].positionQueue.Push(lv_payload);
                     break;
                 case "Player Action":
-                    payloadStack[lv_payload.source].actionQueue.Push(lv_payload);
+                    if (payloadStack.ContainsKey(lv_payload.source))
+                        payloadStack[lv_payload.source].actionQueue.Push(lv_payload);
                     break;
 
             }

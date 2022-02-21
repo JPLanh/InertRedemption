@@ -82,7 +82,10 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
     private bool rechargeStation = false;
     public int weaponState = 0;
 
+    public float insanityLevel = 100;
+
     public AudioSource heartbeat_sound;
+    public AudioSource breathing_sound;
     public PlayerNetworkListener networkListener;
     #endregion
 
@@ -154,22 +157,23 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
         gameObject.name = getUsername;
         livingBeing.setTeamColor(new Color(0f / 255f, 191f / 255f, 188f / 255f, .81f));
         inControl = true;
+        Debug.Log("Setting active player");
     }
 
     public void setOtherPlayer(string getUserID, string getUsername)
     {
         playerCamera.GetComponent<AudioListener>().enabled = false;
-        if (canvas != null) canvas.playerCompass.player = null;
-        canvas = null;
         crosshair = null;
         playerCamera.gameObject.tag = "PlayerEyes";
-        playerCamera.enabled = false;
+        playerCamera.gameObject.SetActive(false);
+//        playerCamera.enabled = false;
         GetComponent<CharacterController>().enabled = false;
         Cursor.lockState = CursorLockMode.Locked;
         userID = getUserID;
         gameObject.name = getUsername;
         livingBeing.setTeamColor(new Color(0f / 255f, 191f / 255f, 188f / 255f, .81f));
         inControl = false;
+        Debug.Log("Setting other player");
     }
 
 
@@ -1090,10 +1094,22 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
     //    }
     //}
 
+    private void playerExit(string in_UID)
+    {
+        canvas.toast.newNotification($"Survivor player {name} has left the game.");
+        if (ifs.currentVirus != null)
+        {
+            ifs.currentVirus.Eject();
+            ifs.currentVirus.detachFromHost();
+        }
+        NetworkMain.payloadStack.Remove(in_UID);
+        EntityManager.survivors.Remove(in_UID);
+        Destroy(gameObject);
+    }
+
     public void serverControl(Payload in_payload)
     {
         string[] parsedAction = in_payload.data["Action"].Split(' ');
-//        Debug.Log(in_payload.data["Action"]);
         switch (parsedAction[0])
         {
             case "Update":
@@ -1105,6 +1121,9 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
                     getInfectionScript().infect(it_virus.Value);
                 }
                 break;
+            case "Exit":
+                playerExit(in_payload.source);
+                break;
             case "Spaceship":
                 Debug.Log(in_payload.data["Action"]);
                 survivorsGO.spaceship.addResource(parsedAction[3], int.Parse(parsedAction[2]));
@@ -1112,6 +1131,27 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
             default:
                 switch (in_payload.data["Action"])
                 {
+                    case "Retrieve Upgrades":
+                        foreach (KeyValuePair<string, string> it_upgrades in in_payload.data)
+                        {
+                            if (!it_upgrades.Key.Equals("Action") && !it_upgrades.Key.Equals("Type"))
+                            {
+                                string[] parsedGear = it_upgrades.Key.Split(' ');
+                                string gearName = it_upgrades.Key.Replace(parsedGear[0] + " ", "");
+                                foreach (IAddon it_addon in livingBeing.currentWeapon.GetComponent<IEquipment>().getAllAddons())
+                                {
+                                    if (it_addon.getName().Equals(it_upgrades.Key))
+                                    {
+                                        it_addon.setLevel(int.Parse(it_upgrades.Value));
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                    case "Survivors Win":
+                        canvas.initLoadingScreen("Survivors has left the area. Survivors Win");
+                        canvas.gameOver();
+                        break;
                     case "Join Game":
                         PlayerController playerSpawn = em.spawnPlayer(in_payload.data);
                         canvas.timeSystem.setTime(StringUtils.convertToFloat(in_payload.data["Time"]));
@@ -1138,9 +1178,18 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
 
             livingBeing.legsAnimator.SetBool("Running", true);
             movementController.playMovementSound();
-            StartCoroutine(LerpPosition(StringUtils.getVectorFromJson(payload, "Pos"), (1f / movementTimer)));
+
             Quaternion newAngle = Quaternion.Euler(0f, float.Parse(payload["yRot"]), 0f);
-            StartCoroutine(LerpRotation(transform.rotation, newAngle, (1f / rotationTimer)));
+
+            if (payload["Username"].Equals(NetworkMain.Username))
+            {
+                transform.position = StringUtils.getVectorFromJson(payload, "Pos");
+                transform.rotation = newAngle;
+            } else
+            {
+                StartCoroutine(LerpPosition(StringUtils.getVectorFromJson(payload, "Pos"), (1f / movementTimer)));
+                StartCoroutine(LerpRotation(transform.rotation, newAngle, (1f / rotationTimer)));
+            }
         }
         else
         {
@@ -1550,5 +1599,58 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
     public LivingBeing getLivingBeing()
     {
         return livingBeing;
+    }
+
+    public List<IAddon> getAllAddons()
+    {
+        List<IAddon> allAddon = new List<IAddon>();
+        livingBeing.currentWeapon.TryGetComponent<IEquipment>(out IEquipment out_current_Gear);
+        allAddon.AddRange(out_current_Gear.getAllAddons());
+        livingBeing.offWeapon.TryGetComponent<IEquipment>(out IEquipment out_off_Gear);
+        allAddon.AddRange(out_off_Gear.getAllAddons());
+        armor.TryGetComponent<IEquipment>(out IEquipment out_armor_Gear);
+        allAddon.AddRange(out_armor_Gear.getAllAddons());
+        visor.TryGetComponent<IEquipment>(out IEquipment out_visor_Gear);
+        allAddon.AddRange(out_visor_Gear.getAllAddons());
+        feet.TryGetComponent<IEquipment>(out IEquipment out_feet_Gear);
+        allAddon.AddRange(out_feet_Gear.getAllAddons());
+        inventory.TryGetComponent<IEquipment>(out IEquipment out_inventory_Gear);
+        allAddon.AddRange(out_inventory_Gear.getAllAddons());
+        return allAddon;
+    }
+
+    public void saveUpgrades()
+    {
+        List<IAddon> lv_all_addons = getAllAddons();
+        foreach(IAddon it_addon in lv_all_addons)
+        {
+//            Debug.Log($"Saving {it_addon.getName()} : level {it_addon.getLevel()}");
+        }
+    }
+
+    public void insanityUpdate(float in_light_level)
+    {
+        if (insanityLevel < 65f)
+        {
+            if (!breathing_sound.isPlaying)
+            {
+                breathing_sound.Play();
+            }
+        } else
+        {
+            if (breathing_sound.isPlaying)
+            {
+                breathing_sound.Stop();
+            }
+        }
+
+        if (in_light_level < .135)
+        {
+            insanityLevel -= Time.deltaTime;
+        }
+        else
+        {
+            insanityLevel = insanityLevel + Time.deltaTime / 3 > 100 ? 100 : insanityLevel + Time.deltaTime / 3;
+        }
     }
 }

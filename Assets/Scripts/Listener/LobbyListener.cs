@@ -23,6 +23,10 @@ public class LobbyListener : MonoBehaviour
     private int countDown = 5;
     IEnumerator countDownTimer;
 
+    int leaderVal = 0;
+    int localVal = 0;
+    string leader;
+
     //void OnDestroy()
     //{
     //    NetworkMain.disconnect();
@@ -34,7 +38,7 @@ public class LobbyListener : MonoBehaviour
         NetworkMain.isBroadcastable = true;
         messageField.Select();
         countDownTimer = countdown();
-
+        localVal = Random.Range(1, 10000);
 //        addNewPlayer(NetworkMain.UserID, NetworkMain.Username, "Main Lobby");
         updateLobbyFilter();
     }
@@ -42,6 +46,7 @@ public class LobbyListener : MonoBehaviour
     void OnApplicationQuit()
     {
         leaveLobby();
+        NetworkMain.disconnect();
     }
 
     private void updateLobbyFilter()
@@ -98,9 +103,17 @@ public class LobbyListener : MonoBehaviour
         {
             Payload getPayload = NetworkMain.serverResponse.Dequeue();
             Dictionary<string, string> payload = new Dictionary<string, string>();
-
+             
             switch (getPayload.data["Action"])
             {
+                //Most likely will not need this but just incase for slower computers at the moment
+                case "Spawn Resource":
+                    ResourceEntity lv_tmp_resource = new ResourceEntity(float.Parse(getPayload.data["xPos"]), float.Parse(getPayload.data["yPos"]), getPayload.data["Resource"], getPayload.data["UID"]);
+                    //                            em.loadResources(lv_tmp_resource);
+                    EntityManager.resourcesLoad.Add(getPayload.data["UID"], lv_tmp_resource);
+                    Debug.Log(getPayload.data["UID"]);
+                    //                    Debug.Log($"xPos: {lv_tmp_resource.xPos} yPos: {lv_tmp_resource.yPos} UID: {lv_tmp_resource.UID}");
+                    break;
                 case "Get All Lobbies":
                     List<string> lv_room_list = new List<string>();
                     foreach(KeyValuePair<string, string> it_room in getPayload.data)
@@ -129,7 +142,6 @@ public class LobbyListener : MonoBehaviour
                         //                        serverResponse.Enqueue(lv_payload);
                     }
                     break;
-
                 case "Get Lobby Users":
                     if (!getPayload.source.Equals(NetworkMain.UserID))
                     {
@@ -217,6 +229,13 @@ public class LobbyListener : MonoBehaviour
                     //chatField.text += $"Now Joining {getPayload.data["LobbyID"].Replace("Lobby-", "")}...\n";
                     //enterLobby();
                     //updateLobbyFilter();
+                    break;
+                case "Leader challenge":
+                    if (leaderVal < int.Parse(getPayload.data["Number"]))
+                    {
+                        leaderVal = int.Parse(getPayload.data["Number"]);
+                        leader = getPayload.source;
+                    }
                     break;
             }
         }
@@ -359,6 +378,7 @@ public class LobbyListener : MonoBehaviour
             virusPlayers.Remove(in_UID);
             addNewPlayer(in_UID, lv_name, "Survivor");
         }
+        managePlayerList();
 
     }
 
@@ -441,9 +461,21 @@ public class LobbyListener : MonoBehaviour
         {
             if (countDown == 0)
             {
-                SceneManager.LoadScene("mainScene");
+                Dictionary<string, string> payload = new Dictionary<string, string>();
+                payload["Action"] = "Init Server";
+                payload["Leader"] = leader;
+                NetworkMain.serverAction(payload);
                 NetworkMain.isBroadcastable = false;
+                SceneManager.LoadScene("mainScene");
+            } else if (countDown == 5) {
+
+                Dictionary<string, string> payload = new Dictionary<string, string>();
+                payload["Action"] = "Leader challenge";
+                payload["Number"] = localVal.ToString();
+                payload["Type"] = "Action";
+                NetworkMain.broadcastAction(payload);
             }
+
             chatField.text += $"Game is starting in {countDown}...\n";
             countDown -= 1;
             yield return new WaitForSeconds(1);

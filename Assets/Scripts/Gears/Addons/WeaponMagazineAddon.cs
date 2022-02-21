@@ -75,4 +75,11 @@ public class WeaponMagazineAddon : MonoBehaviour, IAddon
         return "Max Ammo: " + maxAmmo + " + 50 \n " +
         "Reload Speed: " + reloadSpeed + " - 1 \n";
     }
+
+    public void setLevel(int in_level)
+    {
+            maxAmmo = 50 * in_level;
+            reloadSpeed = 1f * in_level;
+            addonLevel = in_level;
+    }
 }

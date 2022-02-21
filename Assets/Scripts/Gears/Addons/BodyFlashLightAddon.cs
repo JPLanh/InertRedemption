@@ -2,6 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/*
+ * Flash light component of a gear
+ */
+
 public class BodyFlashLightAddon : MonoBehaviour, IAddon
 {
 
@@ -108,5 +112,13 @@ public class BodyFlashLightAddon : MonoBehaviour, IAddon
         return "Charge Capacity: " + chargeCapacity + " + 25 \n " +
         "Rechage Rate: " + rechageRate + " + .5 \n" +
         "Recharge Amount: " + rechargeAmt + "+ 1"; 
+    }
+
+    public void setLevel(int in_level)
+    {
+        chargeCapacity = 25f * in_level;
+        rechageRate = .5f * in_level;
+        rechargeAmt = 1 * in_level;
+        addonLevel = in_level;
     }
 }

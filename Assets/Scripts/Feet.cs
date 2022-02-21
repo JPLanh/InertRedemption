@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Feet : MonoBehaviour, IFeet
+public class Feet : MonoBehaviour, IFeet, IEquipment
 {
     [SerializeField]
     private string partName;
@@ -22,5 +22,15 @@ public class Feet : MonoBehaviour, IFeet
     void Update()
     {
         
+    }
+
+
+    public List<IAddon> getAllAddons()
+    {
+        List<IAddon> listOfAddons = new List<IAddon>();
+        //listOfAddons.Add(chamberAddon);
+        //listOfAddons.Add(muzzleAddon);
+        //listOfAddons.Add(magazineAddon);
+        return listOfAddons;
     }
 }

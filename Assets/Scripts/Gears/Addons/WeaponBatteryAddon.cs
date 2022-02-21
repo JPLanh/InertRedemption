@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class WeaponBatteryAddon : MonoBehaviour, IAddon
 {
-    private string addonName = "Basic Battery";
+    private string addonName = "Basic Weapon Battery";
     private int addonLevel = 1;
     private Dictionary<string, int> requirements;
 
@@ -79,9 +79,9 @@ public class WeaponBatteryAddon : MonoBehaviour, IAddon
     public void updateLevel(int getVal)
     {
 
-        rechargeRate += 1f;
-        rechargeAmount += 1;
-        maxCharge += 25;
+        rechargeRate += 1f * getVal;
+        rechargeAmount += 1 * getVal;
+        maxCharge += 25 * getVal;
 
     addonLevel += getVal;
     }
@@ -93,9 +93,16 @@ public class WeaponBatteryAddon : MonoBehaviour, IAddon
 
     public string getUpgradeInfo()
     {
-
         return "Max Charge: " + maxCharge + " + 25 \n " +
         "Recharge rate: " + rechargeRate + " + 1 charge per second \n" +
         "Recharge amount: " + rechargeAmount + " + 1";
+    }
+
+    public void setLevel(int in_level)
+    {
+        rechargeRate = 1f * in_level;
+        rechargeAmount = 1 * in_level;
+        maxCharge = 25 * in_level;
+        addonLevel = in_level;
     }
 }

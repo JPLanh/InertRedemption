@@ -99,4 +99,13 @@ public class OxygenCapacityAddon : MonoBehaviour, IAddon
         "Recharge rate: " + rechargeRate + " + 1 charge per second \n" +
         "Recharge amount: " + rechargeAmount + " + 1";
     }
+
+    public void setLevel(int in_level)
+    {
+        rechargeRate = 1f * in_level;
+        rechargeAmount = 1 * in_level;
+        maxCharge = 25 * in_level;
+
+        addonLevel = in_level;
+    }
 }

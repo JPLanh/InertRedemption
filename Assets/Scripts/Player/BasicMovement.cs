@@ -155,7 +155,8 @@ public class BasicMovement : MonoBehaviour
 //            payload["host"] = NetworkMain.isHost.ToString();
 
             lastUpdate = Time.time + 1f / updateTimer;
-            NetworkMain.broadcastAction(payload);
+            lv_playerController.serverControl(payload);
+            NetworkMain.broadcastToOther(payload);
             //            NetworkMain.socket.Emit("Update", StringUtils.convertPayloadToJson(payload));
         }
     }

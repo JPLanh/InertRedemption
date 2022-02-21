@@ -112,6 +112,16 @@ public class Console_Upgrade_Option : MonoBehaviour, ButtonListenerInterface
                         currentInventory.getInventory()[getReq.Key] -= getReq.Value;
                         currentInventory.modifyAmount(-getReq.Value);
                     }
+
+                    Dictionary<string, string> payload = new Dictionary<string, string>();
+                    payload["Type"] = "Player Action";
+                    payload["Action"] = "Upgrade";
+                    payload["Level"] = StringUtils.convertIntToString(int.Parse(levelText.text) + 1);
+                    string[] parsedUpgrade = optionText.text.Split(' ');
+                    payload["Type"] = parsedUpgrade[0];
+                    payload["Gear"] = optionText.text.Replace(parsedUpgrade[0] + " ", "");
+                    payload["Username"] = NetworkMain.Username;
+                    NetworkMain.serverAction(payload);
                     currentIAddon.updateLevel(1);
 
 //                    setOption(currentIAddon, currentInventory, toast, parentListener);
