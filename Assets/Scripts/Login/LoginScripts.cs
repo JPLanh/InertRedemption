@@ -27,7 +27,7 @@ public class LoginScripts : MonoBehaviour, ButtonListenerInterface
     void Start()
     {
 
-        createNewButton("Offline", "Go Offline", new Vector3(145f, 0f, 0f));
+//        createNewButton("Offline", "Go Offline", new Vector3(145f, 0f, 0f));
         createNewButton("Online", "Go Online", new Vector3(-145f, 0f, 0f));
     }
 
@@ -117,7 +117,7 @@ public class LoginScripts : MonoBehaviour, ButtonListenerInterface
                         child.GetChild(0).transform.GetComponent<Animator>().SetBool("Active", false);
                     }
                     createNewButton("Join", "Join Host", new Vector3(145f, 0f, 0f));
-                    createNewButton("Create", "Create Game", new Vector3(-145f, 0f, 0f));
+//                    createNewButton("Create", "Create Game", new Vector3(-145f, 0f, 0f));
                     createNewButton("Back", "Return back to main menu", new Vector3(0f, -145f, 0f));
                     usernameField.SetActive(false);
                     IpField.SetActive(false);
@@ -128,7 +128,7 @@ public class LoginScripts : MonoBehaviour, ButtonListenerInterface
                         child.GetChild(0).transform.GetComponent<Animator>().SetBool("Active", false);
                     }
                     usernameField.SetActive(false);
-                    createNewButton("Offline", "Go Offline", new Vector3(145f, 0f, 0f));
+  //                  createNewButton("Offline", "Go Offline", new Vector3(145f, 0f, 0f));
                     createNewButton("Online", "Go Online", new Vector3(-145f, 0f, 0f));
 
                     break;

@@ -76,24 +76,45 @@ public class VirusMovement : MonoBehaviour
     }
     private void fpsCameraView()
     {
+
         rotation.y += Input.GetAxis("Mouse X") * lv_playerController.livingBeing.lookSensativity;
         rotation.z = 0;
 
-            rotation.x += -Input.GetAxis("Mouse Y") * lv_playerController.livingBeing.lookSensativity;
-            rotation.x = Mathf.Clamp(rotation.x, -lookXLimit, lookXLimit);
+        rotation.x += -Input.GetAxis("Mouse Y") * lv_playerController.livingBeing.lookSensativity;
+        rotation.x = Mathf.Clamp(rotation.x, -lookXLimit, lookXLimit);
 
-            //switch (lookState)
-            //{
-            //    case "Tall Shield":
-            //        rotation.x = Mathf.Clamp(rotation.x, tallShieldLookXLo, tallShieldLookXHi);
-            //        break;
-            //    default:
-            //        rotation.x = Mathf.Clamp(rotation.x, -lookXLimit, lookXLimit);
-            //        break;
-            //}
+        //switch (lookState)
+        //{
+        //    case "Tall Shield":
+        //        rotation.x = Mathf.Clamp(rotation.x, tallShieldLookXLo, tallShieldLookXHi);
+        //        break;
+        //    default:
+        //        rotation.x = Mathf.Clamp(rotation.x, -lookXLimit, lookXLimit);
+        //        break;
+        //}
 
-//            lv_playerController.playerCamera.transform.localRotation = Quaternion.Euler(rotation.x, 0, 0);
-        lead.transform.eulerAngles = new Vector2(0, rotation.y);
+//        lv_playerController.livingBeing.upperBody.transform.localRotation = Quaternion.Euler(rotation.x, 0, 0);
+        //        transform.eulerAngles = new Vector2(0, rotation.y);
+        lead.transform.eulerAngles = new Vector2(rotation.x, rotation.y);
+        ///////////////
+//        rotation.y += Input.GetAxis("Mouse X") * lv_playerController.livingBeing.lookSensativity;
+//        rotation.z = 0;
+
+//            rotation.x += -Input.GetAxis("Mouse Y") * lv_playerController.livingBeing.lookSensativity;
+//            rotation.x = Mathf.Clamp(rotation.x, -lookXLimit, lookXLimit);
+
+//            //switch (lookState)
+//            //{
+//            //    case "Tall Shield":
+//            //        rotation.x = Mathf.Clamp(rotation.x, tallShieldLookXLo, tallShieldLookXHi);
+//            //        break;
+//            //    default:
+//            //        rotation.x = Mathf.Clamp(rotation.x, -lookXLimit, lookXLimit);
+//            //        break;
+//            //}
+
+////            lv_playerController.playerCamera.transform.localRotation = Quaternion.Euler(rotation.x, 0, 0);
+//        lead.transform.eulerAngles = new Vector2(0, rotation.y);
     }
 
     public void PositionalUpdate()

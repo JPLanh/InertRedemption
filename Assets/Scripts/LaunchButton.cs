@@ -19,7 +19,12 @@ public class LaunchButton : MonoBehaviour, Interactable
             }
         }
         if (readyForLaunch)
-            Debug.Log("Survivor Wins");
+        {
+            Dictionary<string, string> payload = new Dictionary<string, string>();
+            payload["Type"] = "Player Action";
+            payload["Action"] = "Survivors Win";
+            NetworkMain.broadcastAction(payload);
+        }
     }
 
     // Start is called before the first frame update

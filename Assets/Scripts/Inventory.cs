@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Inventory : MonoBehaviour, IInventory
+public class Inventory : MonoBehaviour, IInventory, IEquipment
 {
     [SerializeField]
     private string partName;
@@ -112,3 +112,4 @@ public class Inventory : MonoBehaviour, IInventory
         capacityAddon.amount += getAmt;
     }
 }
+

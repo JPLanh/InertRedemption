@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SpotLight : MonoBehaviour, Damagable, Displayable, IBuilding, Interactable
+public class SpotLight : MonoBehaviour, IDamagable, Displayable, IBuilding, Interactable
 {
     public Node currentNode;
     public string harvestTarget = "Electricity";

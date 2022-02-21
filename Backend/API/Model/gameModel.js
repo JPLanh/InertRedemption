@@ -67,13 +67,20 @@ var item = new Schema({
 });
 
 var lobby = new Schema({
-	hostID: {type: String},
 	lobbyID: {type: String},
-	resourceLimit: {type: Number}
+	started: {type: Boolean}
 });
+
+var upgrades = new Schema({
+	name: {type: String},
+	type: {type: String},
+	user: {type: String},
+	level: {type: Number}
+})
 
 module.exports = mongoose.model("Item", item);
 module.exports = mongoose.model("Lobby", lobby);
 module.exports = mongoose.model("Player", player);
 module.exports = mongoose.model("User", user);
 module.exports = mongoose.model("Resources", resource);
+module.exports = mongoose.model("Upgrade", upgrades);

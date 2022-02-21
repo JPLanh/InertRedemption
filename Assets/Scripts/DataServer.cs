@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DataServer : MonoBehaviour, Damagable
+public class DataServer : MonoBehaviour, IDamagable
 {
     public int data;
     public int rate;

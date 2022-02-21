@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Visor : MonoBehaviour, IVisor
+public class Visor : MonoBehaviour, IVisor, IEquipment
 {
     [SerializeField]
     private string partName;
@@ -26,5 +26,14 @@ public class Visor : MonoBehaviour, IVisor
     void Update()
     {
         
+    }
+
+    public List<IAddon> getAllAddons()
+    {
+        List<IAddon> listOfAddons = new List<IAddon>();
+        //listOfAddons.Add(chamberAddon);
+        //listOfAddons.Add(muzzleAddon);
+        //listOfAddons.Add(magazineAddon);
+        return listOfAddons;
     }
 }

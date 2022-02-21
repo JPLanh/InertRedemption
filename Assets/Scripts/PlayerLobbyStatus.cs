@@ -32,6 +32,15 @@ using UnityEngine.UI;
         readyCheckImage.color = new Color(1f, 0f, 0f, 1f);
     }
 
+    public void init(PlayerLobbyStatus in_player_status)
+    {
+        playerName = in_player_status.playerName;
+        readyText = in_player_status.readyText;
+        team = in_player_status.team;
+        readyCheckImage = in_player_status.readyCheckImage;
+
+    }
+
     public void readyCheckToggle()
     {
         ready = ready ? false : true;
