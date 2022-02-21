@@ -1176,6 +1176,7 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
                 weaponState = StringUtils.convertToInt(payload["WeaponState"]);
             }
 
+            Debug.Log("Server control hitting again");
             livingBeing.legsAnimator.SetBool("Running", true);
             movementController.playMovementSound();
 
