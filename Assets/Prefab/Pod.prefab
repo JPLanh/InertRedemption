@@ -93,6 +93,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   action: 
   team: {fileID: 0}
+  monitorText: {fileID: 0}
 --- !u!114 &7069062849365050325
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -167,7 +168,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d788d1023d0d38740a87748ca3189189, type: 2}
+  - {fileID: 2100000, guid: 88b424a8a16085c4ab2af069add76ba0, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -248,7 +249,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: abe0b4ad7ed8d6b4dab2e2220a29f30d, type: 2}
+  - {fileID: 2100000, guid: dea9b186627d95b4bb656ce5a9943aba, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
