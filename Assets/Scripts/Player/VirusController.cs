@@ -99,7 +99,6 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
 
     public void setActivePlayer(string getUserID, string getUsername, PlayerCanvas in_canvas)
     {
-        Debug.Log("Setting active plater");
         canvas = in_canvas;
         crosshair = canvas.crosshair;
         canvas.playerCompass.player = this.transform;
@@ -213,7 +212,17 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
 
         //}
     }
-
+    private void playerExit(string in_UID)
+    {
+        canvas.toast.newNotification($"Virus player {name} has left the game.");
+        if (infectedPlayer != null)
+        {
+            infectedPlayer.ifs.currentVirus = null;
+        }
+        NetworkMain.payloadStack.Remove(in_UID);
+        EntityManager.virus.Remove(in_UID);
+        Destroy(gameObject);
+    }
     public void serverControl(Payload in_payload)
     {
         string[] parsedAction = in_payload.data["Action"].Split(' ');
@@ -222,10 +231,13 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
         {
             case "Eject":
                 Eject();
-                if (in_payload.source.Equals(NetworkMain.Username)) detachFromHost();
+                detachFromHost();
                 break;
             case "Infect":
                 negativeInfect(in_payload.target, float.Parse(in_payload.data["Amount"]));
+                break;
+            case "Exit Game Session":
+                playerExit(in_payload.source);
                 break;
             case "Update":
                 serverControl(in_payload.data);
@@ -392,9 +404,11 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
     {
         if (infectedPlayer != null)
         {
-            NetworkMain.broadcastAction("Eject");
+            Dictionary<string, string> payload = new Dictionary<string, string>();
+            payload["Type"] = "Player Action";
+            payload["Action"] = "Eject";
+            NetworkMain.broadcastAction(payload);
         }
-        //Eject();
     }
 
     #endregion
@@ -533,15 +547,12 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
         transform.localPosition = new Vector3(0f, 0f, 0f);
     }
 
-    private void Eject()
+    public void Eject()
     {
 
         //        lv_virusController.crosshair = null;
         //        infectedPlayer = in_player;
         canvas.playerCompass.player = transform;
-        Debug.Log(infectedPlayer);
-        Debug.Log(infectedPlayer.playerCamera);
-        Debug.Log(infectedPlayer.playerCamera.gameObject);
         infectedPlayer.playerCamera.gameObject.tag = "PlayerEyes";
         playerCamera.gameObject.tag = "MainCamera";
         playerCamera.enabled = true;
@@ -655,5 +666,10 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
     public LivingBeing getLivingBeing()
     {
         return null;
+    }
+
+    public void saveUpgrades()
+    {
+
     }
 }

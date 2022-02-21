@@ -4,7 +4,7 @@ using UnityEngine;
 using System;
 
 [Serializable]
-public class Resource : MonoBehaviour, Damagable
+public class Resource : MonoBehaviour, IDamagable
 {
     public string _id;
     public string __v;

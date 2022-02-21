@@ -39,22 +39,16 @@ public class WeaponBladeAddon : MonoBehaviour, IAddon
         return requirements;
     }
 
-    // Start is called before the first frame update
-    void Start()
-    {
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
     public void updateLevel(int getVal)
     {
-        damage += 5;
+        damage -= 5 * getVal;
         addonLevel += getVal;
+    }
+
+    public void setLevel(int in_val)
+    {
+        damage = -20 - (5 * in_val);
+        addonLevel = in_val;
     }
 
     public string getInfo()

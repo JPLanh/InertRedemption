@@ -74,4 +74,11 @@ public class WeaponChamberAddon : MonoBehaviour, IAddon
         return "Damage: " + damage + " + 1 \n " +
         "Fire Rate: " + fireRate + " + 1 fire per secod \n";
     }
+
+    public void setLevel(int in_level)
+    {
+        damage = 1 * in_level;
+        fireRate = 1f * in_level;
+        addonLevel = in_level;
+    }
 }

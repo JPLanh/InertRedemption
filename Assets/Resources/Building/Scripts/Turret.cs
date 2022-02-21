@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Turret : MonoBehaviour, Damagable, Displayable, IBuilding, Interactable
+public class Turret : MonoBehaviour, IDamagable, Displayable, IBuilding, Interactable
 {
     [SerializeField]
     private ParticleSystem muzzleFlash;

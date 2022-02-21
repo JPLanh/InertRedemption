@@ -9,7 +9,7 @@ public class NetworkSocketIO : MonoBehaviour
 
     public static Dictionary<string, Stack<string>> playerUpdates;
     public EntityManager em;
-    public bool ready = false;
+    public bool gameBegin = false;
     public float timeChecker = 0;
     public Survivors lv_survivor;
     [SerializeField] TimeSystem currentTime;
@@ -44,15 +44,20 @@ public class NetworkSocketIO : MonoBehaviour
 
             Dictionary<string, string> localPlayer = StringUtils.getPayload();
             localPlayer["lobbyID"] = NetworkMain.LobbyID;
+            localPlayer["Username"] = NetworkMain.Username;
             localPlayer["Action"] = "Enter Game";
             NetworkMain.serverAction(localPlayer);
         }
     }
 
-    void OnDestroy()
+    void OnApplicationQuit()
     {
-        if (!NetworkMain.local)
-            NetworkMain.disconnect();
+        Dictionary<string, string> payload = new Dictionary<string, string>();
+        payload["Type"] = "Player Action";
+        payload["Action"] = "Exit Game Session";
+        EntityManager.players[NetworkMain.UserID].saveUpgrades();
+        NetworkMain.broadcastAction(payload);
+        NetworkMain.disconnect();
     }
 
     // Update is called once per frame
@@ -60,23 +65,30 @@ public class NetworkSocketIO : MonoBehaviour
     {
         if (!NetworkMain.local)
         {
+            if (EntityManager.survivors.Count == 0 && lv_canvas.countDownTimer == 10 && gameBegin)
+            {
+                lv_canvas.initLoadingScreen("Virus has eliminated all players. Virus Wins");
+                lv_canvas.gameOver();
+            }
             if (NetworkMain.serverResponse.Count > 0)
             {
                 Payload getPayload = NetworkMain.serverResponse.Dequeue();
                 if (getPayload.data.TryGetValue("Action", out string out_action))
                 {
-
+                    
                     switch (out_action)
-                    { 
-
+                    {
                         case "Spawn Resource":
                             ResourceEntity lv_tmp_resource = new ResourceEntity(float.Parse(getPayload.data["xPos"]), float.Parse(getPayload.data["yPos"]), getPayload.data["Resource"], getPayload.data["UID"]);
-                            em.loadResources(lv_tmp_resource);
-//                            EntityManager.resourcesLoad.Add(getPayload.data["UID"], lv_tmp_resource);
+                            //                            em.loadResources(lv_tmp_resource);
+                            EntityManager.resourcesLoad.Add(getPayload.data["UID"], lv_tmp_resource);
+//                            Debug.Log(getPayload.data["UID"]);
                             //                    Debug.Log($"xPos: {lv_tmp_resource.xPos} yPos: {lv_tmp_resource.yPos} UID: {lv_tmp_resource.UID}");
                             break;
                         case "Resource Loaded":
+                            em.loadResources();
                             lv_canvas.deinitLoadingScreen();
+                            gameBegin = true;
                             break;
                         case "Update Infection Monitor":
                             EntityManager.infectionMonitor.text = getPayload.data["Message"];

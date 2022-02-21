@@ -5,7 +5,7 @@ using System;
 //using Socket.Newtonsoft.Json;
 //using Socket.Newtonsoft.Json.Linq;
 
-public class LivingBeing : MonoBehaviour, Damagable
+public class LivingBeing : MonoBehaviour, IDamagable
 {
     public float health;
     public float infectionRate = 0;

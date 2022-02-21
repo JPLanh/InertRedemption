@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Building : MonoBehaviour, Damagable, Displayable, IBuilding, IPublisher, ISubscribers
+public class Building : MonoBehaviour, IDamagable, Displayable, IBuilding, IPublisher, ISubscribers
 {
     public Node currentNode;
     public string harvestTarget = "Electricity";

@@ -38,7 +38,7 @@ public class NetworkMain : MonoBehaviour
     }
     public static void disconnect()
     {
-        if (!local && socket != null) socket.Disconnect();
+        if (socket != null) socket.Disconnect();
     }
 
     void Start()
@@ -49,11 +49,12 @@ public class NetworkMain : MonoBehaviour
     #region QSocket implementation
     public static void joinGame(String username, String password, string in_action)
     {
-        socket = IO.Socket("http://35.212.249.77:26843");
 
+            socket = IO.Socket("http://35.212.249.77:26842");
         socket.On(QSocket.EVENT_CONNECT, () =>
         {
             isConnected = true;
+            Debug.Log("Connecting");
             try
             {
                 Dictionary<string, string> payload = new Dictionary<string, string>();
@@ -88,10 +89,12 @@ public class NetworkMain : MonoBehaviour
                     serverResponse.Enqueue(lv_payload);
                     break;
                 case "Player Update":
-                    payloadStack[lv_payload.source].positionQueue.Push(lv_payload);
+                    if (payloadStack.ContainsKey(lv_payload.source))
+                        payloadStack[lv_payload.source].positionQueue.Push(lv_payload);
                     break;
                 case "Player Action":
-                    payloadStack[lv_payload.source].actionQueue.Push(lv_payload);
+                    if (payloadStack.ContainsKey(lv_payload.source))
+                        payloadStack[lv_payload.source].actionQueue.Push(lv_payload);
                     break;
 
             }
@@ -209,6 +212,7 @@ public class NetworkMain : MonoBehaviour
     {
             Dictionary<string, string> networkPayload = new Dictionary<string, string>();
             networkPayload["source"] = UserID;
+            networkPayload["lobbyID"] = NetworkMain.LobbyID;
             networkPayload["data"] = StringUtils.convertPayloadToJson(getPayload);
             networkPayload["target"] = getTarget;
             socket.Emit("Server", StringUtils.convertPayloadToJson(networkPayload));

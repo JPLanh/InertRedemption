@@ -268,4 +268,9 @@ public class InfectionController : MonoBehaviour, IPlayerController
     {
         Eject();
     }
+
+    public void saveUpgrades()
+    {
+
+    }
 }

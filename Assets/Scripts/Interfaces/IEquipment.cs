@@ -5,5 +5,5 @@ using System.Collections.Generic;
 
 public interface IEquipment
 {
-    public List<IAddon> getAllAddons(); 
+    public List<IAddon> getAllAddons();
 }

@@ -71,4 +71,11 @@ public class WeaponBarrelAddon : MonoBehaviour, IAddon
         return "Projectile speed: " + projectileSpeed + " + 5 \n " +
         "Projectile Range: " + projectileRange + " + 15 \n";
     }
+
+    public void setLevel(int in_level)
+    {
+        projectileSpeed = 5f * in_level;
+        projectileRange = 15f * in_level;
+        addonLevel = in_level;
+    }
 }

@@ -89,4 +89,11 @@ public class StorageCapacityAddon : MonoBehaviour, IAddon
         return "Max Capacity: " + maxSize + " + 5 \n " +
         "Max Ammo Capacity: " + maxAmmoSize + " + 20 \n";
     }
+
+    public void setLevel(int in_level)
+    {
+            maxSize = 5 * in_level;
+            maxAmmoSize = 20 * in_level;
+            addonLevel = in_level;
+    }
 }

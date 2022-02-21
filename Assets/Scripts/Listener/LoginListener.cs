@@ -41,7 +41,7 @@ public class LoginListener : MonoBehaviour
                     case "Welcome":
                         NetworkMain.Username = payload["Username"];
                         NetworkMain.UserID = payload["UserID"];
-                        NetworkMain.LobbyID = payload["Server"];
+                        NetworkMain.LobbyID = "Lobby-Main";
                         if (useEnjin)
                         {
                             EnjinScript.AuthApp();

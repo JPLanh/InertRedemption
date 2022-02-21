@@ -2,9 +2,9 @@ const
 	express = require('express'),
         app = express(),
 	server = require("http").Server(app),
-	io = require('socket.io')(server)
+	io = require('socket.io')(server),
 	socket = require('./API/Socket/socket'),
-        port = process.env.PORT || 26843,
+        port = process.env.PORT || 26842,
         mongoose = require('mongoose');
 
 socket(io);
