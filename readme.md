@@ -1,7 +1,8 @@
 # Inert Redemption
 
-# Current Version: 0.0.17a
+# Current Version: 0.0.18a
 # Latst release version: N/A
+# Developed on the Universal Render Pipeline
 
 * Dependencies
   * Server
