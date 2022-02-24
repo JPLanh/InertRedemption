@@ -27,15 +27,16 @@ public class Barricade : MonoBehaviour, IDamagable, Displayable, IBuilding
         placer.building = this;
     }
 
-    public GameObject isDamage(bool network, float getValue, GameObject attacker)
+    public bool isDamage(bool network, float getValue, GameObject attacker)
     {
-        durability += getValue;
-        if (durability < 0)
-        {
-            emitter.addCurrent(-buildingCurrent);
-            Destroy(this.gameObject);
-        }
-        return null;
+        return false;
+        //durability += getValue;
+        //if (durability < 0)
+        //{
+        //    emitter.addCurrent(-buildingCurrent);
+        //    Destroy(this.gameObject);
+        //}
+        //return null;
     }
 
     // Update is called once per frame

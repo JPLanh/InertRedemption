@@ -83,7 +83,7 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
     public int weaponState = 0;
 
     public float insanityLevel = 100;
-
+    private bool onShip = true;
     public AudioSource heartbeat_sound;
     public AudioSource breathing_sound;
     public PlayerNetworkListener networkListener;
@@ -148,25 +148,19 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
         canvas = in_canvas;
         crosshair = canvas.crosshair;
         canvas.playerCompass.player = this.transform;
-        playerCamera.gameObject.tag = "MainCamera";
-        playerCamera.enabled = true;
-        playerCamera.GetComponent<AudioListener>().enabled = true;
         GetComponent<CharacterController>().enabled = true;
         Cursor.lockState = CursorLockMode.Locked;
+        playerCamera.gameObject.SetActive(true);
         userID = getUserID;
         gameObject.name = getUsername;
         livingBeing.setTeamColor(new Color(0f / 255f, 191f / 255f, 188f / 255f, .81f));
         inControl = true;
-        Debug.Log("Setting active player");
     }
 
     public void setOtherPlayer(string getUserID, string getUsername)
     {
-        playerCamera.GetComponent<AudioListener>().enabled = false;
         crosshair = null;
-        playerCamera.gameObject.tag = "PlayerEyes";
         playerCamera.gameObject.SetActive(false);
-//        playerCamera.enabled = false;
         GetComponent<CharacterController>().enabled = false;
         Cursor.lockState = CursorLockMode.Locked;
         userID = getUserID;
@@ -184,10 +178,11 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
 
         networkListener.networkActionListen();
         networkListener.networkPositionListen();
+
+        if (rechargeStation) refillWeapons();
         if (isAlive && inControl)
         {
 
-            if (rechargeStation) refillWeapons();
 
             if (NetworkMain.Username == gameObject.name)
             {
@@ -517,7 +512,7 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
                 reload(true);
                 break;
             case "Crouch":
-                toggleCrouching();
+                crouching();
                 break;
             //case "CrouchUp":
             //    livingBeing.legsAnimator.SetBool("isCrouching", false);
@@ -551,6 +546,24 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
     public void toggleCrouching()
     {
 
+        Dictionary<string, string> payload = new Dictionary<string, string>();
+        payload["Type"] = "Player Action";
+        payload["Action"] = "Crouching";
+        payload["Value"] = livingBeing.legsAnimator.GetBool("isCrouching").ToString();
+        NetworkMain.broadcastAction(payload);
+        //livingBeing.legsAnimator.SetBool("isCrouching", livingBeing.legsAnimator.GetBool("isCrouching") ? false : true);
+        //if (livingBeing.legsAnimator.GetBool("isCrouching"))
+        //{
+        //    livingBeing.speed = 10f;
+        //}
+        //else
+        //{
+        //    livingBeing.speed = 25f;
+        //}
+    }
+
+    public void crouching()
+    {
         livingBeing.legsAnimator.SetBool("isCrouching", livingBeing.legsAnimator.GetBool("isCrouching") ? false : true);
         if (livingBeing.legsAnimator.GetBool("isCrouching"))
         {
@@ -560,6 +573,7 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
         {
             livingBeing.speed = 25f;
         }
+
     }
 
     public void fireTwo()
@@ -1176,11 +1190,22 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
                 weaponState = StringUtils.convertToInt(payload["WeaponState"]);
             }
 
-            Debug.Log("Server control hitting again");
-            livingBeing.legsAnimator.SetBool("Running", true);
-            movementController.playMovementSound();
-
-            Quaternion newAngle = Quaternion.Euler(0f, float.Parse(payload["yRot"]), 0f);
+            insanityLevel = float.Parse(payload["insanity"]);
+            if (livingBeing.legsAnimator.GetBool("isCrouching"))
+            {
+                livingBeing.legsAnimator.SetBool("Running", false);
+                livingBeing.legsAnimator.SetBool("Walking", true);
+            }
+            else
+            {
+                livingBeing.legsAnimator.SetBool("Running", true);
+                livingBeing.legsAnimator.SetBool("Walking", false);
+            }
+            //            movementController.playMovementSound();
+            /*
+             * 
+             *             Quaternion newAngle = Quaternion.Euler(0f, float.Parse(payload["yRot"]), 0f);
+            Quaternion newCameraAngle = Quaternion.Euler(float.Parse(payload["yRot"]), 0f, 0f);
 
             if (payload["Username"].Equals(NetworkMain.Username))
             {
@@ -1190,12 +1215,31 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
             {
                 StartCoroutine(LerpPosition(StringUtils.getVectorFromJson(payload, "Pos"), (1f / movementTimer)));
                 StartCoroutine(LerpRotation(transform.rotation, newAngle, (1f / rotationTimer)));
+                StartCoroutine(LerpRotation(playerCamera.transform.rotation, newCameraAngle, (1f / rotationTimer)));
+            }
+
+             * 
+             */
+            Quaternion newAngle = Quaternion.Euler(0f, float.Parse(payload["yRot"]), 0f);
+            Vector3 newCameraAngle = new Vector3(float.Parse(payload["xRot"]), 0f, 0f);
+
+            if (payload["Username"].Equals(NetworkMain.Username))
+            {
+                transform.position = StringUtils.getVectorFromJson(payload, "Pos");
+                transform.rotation = newAngle;
+            } else
+            {
+                StartCoroutine(LerpPosition(StringUtils.getVectorFromJson(payload, "Pos"), (1f / movementTimer)));
+                StartCoroutine(LerpRotation(transform.rotation, newAngle, (1f / rotationTimer)));
+                livingBeing.upperBody.transform.localEulerAngles = newCameraAngle;
+//                StartCoroutine(LerpCameraRotation(newCameraAngle, (1f / rotationTimer)));
             }
         }
         else
         {
             livingBeing.legsAnimator.SetBool("Running", false);
-            movementController.stopMovementSound();
+            livingBeing.legsAnimator.SetBool("Walking", false);
+            //            movementController.stopMovementSound();
         }
     }
 
@@ -1225,6 +1269,18 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
             yield return null;
         }
         transform.rotation = targetPosition;
+    }
+
+    IEnumerator LerpCameraRotation(Vector3 targetPosition, float duration)
+    {
+        float time = 0;
+        while (time < duration)
+        {
+            //livingBeing.upperBody.transform.localEulerAngles = Quaternion.Lerp(livingBeing.upperBody.transform.localEulerAngles, targetPosition, time / duration);
+            time += Time.deltaTime / 2;
+            yield return null;
+        }
+        livingBeing.upperBody.transform.localEulerAngles = targetPosition;
     }
     //public void joinGame(Dictionary<string, string> payload)
     //{
@@ -1644,14 +1700,16 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
                 breathing_sound.Stop();
             }
         }
-
-        if (in_light_level < .135)
+        if (name.Equals(NetworkMain.Username))
         {
-            insanityLevel -= Time.deltaTime;
-        }
-        else
-        {
-            insanityLevel = insanityLevel + Time.deltaTime / 3 > 100 ? 100 : insanityLevel + Time.deltaTime / 3;
+            if (in_light_level == 0)
+            {
+                insanityLevel -= Time.deltaTime;
+            }
+            else
+            {
+                insanityLevel = insanityLevel + Time.deltaTime / 3 > 100 ? 100 : insanityLevel + Time.deltaTime / 3;
+            }
         }
     }
 }

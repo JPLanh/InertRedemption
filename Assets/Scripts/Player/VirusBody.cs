@@ -12,6 +12,8 @@ public class VirusBody : MonoBehaviour
     public float lookSensativity;
     public bool marked = false;
     public GameObject currentList;
+    private float decayRate = 5f;
+    private float decayTimer = 0f;
 
     // Start is called before the first frame update
     void Start()
@@ -21,6 +23,12 @@ public class VirusBody : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        decayTimer += Time.deltaTime;
+        if (decayTimer >= decayRate)
+        {
+            decayTimer = 0;
+            health -= 1;
+        }
 
         if (transform.position.y < -1000)
         {

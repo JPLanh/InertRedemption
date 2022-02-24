@@ -77,32 +77,33 @@ public class LivingBeing : MonoBehaviour, IDamagable
             legsMesh.GetComponent<Renderer>().materials[1].SetColor("_EmissionColor", getColor);
     }
 
-    public GameObject isDamage(bool network, float getValue, GameObject attacker)
+    public bool isDamage(bool network, float getValue, GameObject attacker)
     {
-        if (NetworkMain.local)
-        {
-            health += getValue;
-            damageCheck();
-        }
-        else
-        {
-            if (!network)
-            {
-                health = getValue;
-                damageCheck();
-            }
-            else
-            {
-                Dictionary<string, string> payload = new Dictionary<string, string>();
-                payload["Target"] = gameObject.name;
-                payload["damage"] = StringUtils.convertFloatToString(getValue);
-                payload["Action"] = "Damage Living";
-                //NetworkMain.messageServer(payload);
-            }
-        }
+        return false;
+        //if (NetworkMain.local)
+        //{
+        //    health += getValue;
+        //    damageCheck();
+        //}
+        //else
+        //{
+        //    if (!network)
+        //    {
+        //        health = getValue;
+        //        damageCheck();
+        //    }
+        //    else
+        //    {
+        //        Dictionary<string, string> payload = new Dictionary<string, string>();
+        //        payload["Target"] = gameObject.name;
+        //        payload["damage"] = StringUtils.convertFloatToString(getValue);
+        //        payload["Action"] = "Damage Living";
+        //        //NetworkMain.messageServer(payload);
+        //    }
+        //}
 
-        health += getValue;
-        return null;
+        //health += getValue;
+        //return null;
         //        print(this);
     }
 

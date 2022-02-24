@@ -17,10 +17,12 @@ public class Resource : MonoBehaviour, IDamagable
     public float durability;
     [NonSerialized] public GameObject loot;
     public AudioSource damageSound;
+    public AudioSource breakingSound;
     public string resource;
     public int amount;
     public string lobbyID;
     public string UID;
+    public bool isDestroyed = false;
     // Start is called before the first frame update
     void Start()
     {
@@ -31,44 +33,86 @@ public class Resource : MonoBehaviour, IDamagable
     void Update()
     {
 
-        if (durability <= 0 && !damageSound.isPlaying)
-        {
-            createLoot();
+        //if (durability <= 0 && !breakingSound.isPlaying)
+        //{
+        //    breakingSound.Play();
             //Dictionary<string, string> payload = new Dictionary<string, string>();
             //payload["UID"] = UID;
             //payload["Action"] = "Destroy Resource";
             //NetworkMain.broadcastAction(payload);
             //
-        }
+        //}
     }
 
-    public GameObject isDamage(bool network, float getValue, GameObject attacker)
+    public bool isDamage(bool network, float getValue, GameObject attacker)
     {
-        if (NetworkMain.local)
+        //if (NetworkMain.local)
+        //{
+        //    durability += getValue;
+        //    if (durability < 0)
+        //    {
+        //        breakingSound.Play();
+        //        createLoot();
+        //        return true;
+        //    }
+        //} else
+        //{
+        if (durability > 0)
         {
-            durability += getValue;
-            if (durability < 0)
-            {
-                return createLoot();
-                
-            }
-        } else
-        {
-                Dictionary<string, string> payload = new Dictionary<string, string>();
-                payload["UID"] = UID;
+            Dictionary<string, string> payload = new Dictionary<string, string>();
+            payload["UID"] = UID;
             payload["Type"] = "Action";
-                payload["Damage"] = StringUtils.convertFloatToString(getValue);
-                payload["Action"] = "Damage Resource";
-                NetworkMain.broadcastAction(payload);
-//                NetworkMain.messageServer(payload);
+            payload["Damage"] = StringUtils.convertFloatToString(getValue);
+            payload["Action"] = "Damage Resource";
+            NetworkMain.broadcastAction(payload);
+            return true;
         }
-        return null;
+        return false;
+    }
+
+    IEnumerator breakingResource()
+    {
+        isDestroyed = true;
+        breakingSound.Play();
+        yield return new WaitForSeconds(4);
+        createLoot();
+        Destroy(gameObject);
+    }
+
+    IEnumerator exhaustingResource()
+    {
+        isDestroyed = true;
+        breakingSound.Play();
+        yield return new WaitForSeconds(4);
+        Destroy(gameObject);
     }
 
     public void damage(float getValue)
     {
-        damageSound.Play();
+
         durability += getValue;
+        if (durability > 0)
+        {
+            damageSound.Play();
+        } else
+        {
+            StartCoroutine(breakingResource());
+        }
+    }
+
+    public bool harvest(float getValue)
+    {
+
+        durability += getValue;
+        if (durability > 0)
+        {
+            return true;
+        }
+        else
+        {
+            StartCoroutine(exhaustingResource());
+            return false;
+        }
     }
 
     private GameObject createLoot()
@@ -89,7 +133,5 @@ public class Resource : MonoBehaviour, IDamagable
         Destroy(this.gameObject);
         EntityManager.resources.Remove(UID);
         return GO;
-
-
     }
 }

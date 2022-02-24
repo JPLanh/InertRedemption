@@ -47,7 +47,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   partName: Basic Armor
   components: {fileID: 3651344334379217799}
-  lightSource: {fileID: 1531781518384559450}
+  bodyResilientAddon: {fileID: 0}
+  ironWillAddon: {fileID: 0}
+  antibodyDevelopmentAddon: {fileID: 0}
 --- !u!114 &1531781518384559450
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -69,7 +71,9 @@ MonoBehaviour:
   rechargeAmt: 2
   charge: 100
   actionTimer: 0
-  lightsource: {fileID: 7309449695708124155}
+  lightsource: {fileID: 0}
+  lightOnAudio: {fileID: 0}
+  lightOffAudio: {fileID: 0}
 --- !u!1 &3651344334379217799
 GameObject:
   m_ObjectHideFlags: 0
@@ -96,75 +100,7 @@ Transform:
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: -0.00000023841858, y: 0, z: 0.0000009536743}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children:
-  - {fileID: 4596187568479344761}
+  m_Children: []
   m_Father: {fileID: 654623052035353524}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &2295044681148097355
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    m_TransformParent: {fileID: 1410341743545923996}
-    m_Modifications:
-    - target: {fileID: 2310719101678156594, guid: 95307cb1bec10d4418fb1ad0fec3b2ba, type: 3}
-      propertyPath: m_RootOrder
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2310719101678156594, guid: 95307cb1bec10d4418fb1ad0fec3b2ba, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2310719101678156594, guid: 95307cb1bec10d4418fb1ad0fec3b2ba, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2310719101678156594, guid: 95307cb1bec10d4418fb1ad0fec3b2ba, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2310719101678156594, guid: 95307cb1bec10d4418fb1ad0fec3b2ba, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 2310719101678156594, guid: 95307cb1bec10d4418fb1ad0fec3b2ba, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2310719101678156594, guid: 95307cb1bec10d4418fb1ad0fec3b2ba, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2310719101678156594, guid: 95307cb1bec10d4418fb1ad0fec3b2ba, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2310719101678156594, guid: 95307cb1bec10d4418fb1ad0fec3b2ba, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2310719101678156594, guid: 95307cb1bec10d4418fb1ad0fec3b2ba, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2310719101678156594, guid: 95307cb1bec10d4418fb1ad0fec3b2ba, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7998125193541408892, guid: 95307cb1bec10d4418fb1ad0fec3b2ba, type: 3}
-      propertyPath: m_Name
-      value: Light Addon
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 95307cb1bec10d4418fb1ad0fec3b2ba, type: 3}
---- !u!4 &4596187568479344761 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 2310719101678156594, guid: 95307cb1bec10d4418fb1ad0fec3b2ba, type: 3}
-  m_PrefabInstance: {fileID: 2295044681148097355}
-  m_PrefabAsset: {fileID: 0}
---- !u!108 &7309449695708124155 stripped
-Light:
-  m_CorrespondingSourceObject: {fileID: 8838810420035612848, guid: 95307cb1bec10d4418fb1ad0fec3b2ba, type: 3}
-  m_PrefabInstance: {fileID: 2295044681148097355}
-  m_PrefabAsset: {fileID: 0}

@@ -55,38 +55,38 @@ public class TimeSystem : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!timeFreeze)
-            time += timeRate * Time.deltaTime;
-        if (time >= 1.0f)
-        {
-            time = 0f;
-//            em.npcCounter = 6;
-        }
+//        if (!timeFreeze)
+//            time += timeRate * Time.deltaTime;
+//        if (time >= 1.0f)
+//        {
+//            time = 0f;
+////            em.npcCounter = 6;
+//        }
 
-        int minute = getMinute();
+//        int minute = getMinute();
 
-        timeText.text = (minute/60).ToString("D2") + " : " + (minute % 60).ToString("D2");
+//        timeText.text = (minute/60).ToString("D2") + " : " + (minute % 60).ToString("D2");
 
-        sun.transform.eulerAngles = (time) * noon * 4.0f;
-        moon.transform.eulerAngles = (time - .5f) * noon * 4.0f;
+//        sun.transform.eulerAngles = (time) * noon * 4.0f;
+//        moon.transform.eulerAngles = (time - .5f) * noon * 4.0f;
 
-        sun.intensity = sunIntensity.Evaluate(time);
-        moon.intensity = moonIntensity.Evaluate(time);
+//        sun.intensity = sunIntensity.Evaluate(time);
+//        moon.intensity = moonIntensity.Evaluate(time);
 
-        sun.color = sunColor.Evaluate(time);
-        moon.color = moonColor.Evaluate(time);
+//        sun.color = sunColor.Evaluate(time);
+//        moon.color = moonColor.Evaluate(time);
 
-        if (sun.intensity == 0 && sun.gameObject.activeInHierarchy)
-            sun.gameObject.SetActive(false);
-        else if (sun.intensity > 0 && !sun.gameObject.activeInHierarchy)
-            sun.gameObject.SetActive(true);
+//        if (sun.intensity == 0 && sun.gameObject.activeInHierarchy)
+//            sun.gameObject.SetActive(false);
+//        else if (sun.intensity > 0 && !sun.gameObject.activeInHierarchy)
+//            sun.gameObject.SetActive(true);
 
-        if (moon.intensity == 0 && moon.gameObject.activeInHierarchy)
-            moon.gameObject.SetActive(false);
-        else if (moon.intensity > 0 && !moon.gameObject.activeInHierarchy)
-            moon.gameObject.SetActive(true);
+//        if (moon.intensity == 0 && moon.gameObject.activeInHierarchy)
+//            moon.gameObject.SetActive(false);
+//        else if (moon.intensity > 0 && !moon.gameObject.activeInHierarchy)
+//            moon.gameObject.SetActive(true);
 
-        RenderSettings.ambientIntensity = lightingIntensityMultipler.Evaluate(time);
-        RenderSettings.reflectionIntensity = reflectionIntensityMultipler.Evaluate(time);
+//        RenderSettings.ambientIntensity = lightingIntensityMultipler.Evaluate(time);
+//        RenderSettings.reflectionIntensity = reflectionIntensityMultipler.Evaluate(time);
     }
 }

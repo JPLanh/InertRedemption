@@ -67,7 +67,9 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
     private bool rechargeStation = false;
     public int weaponState = 0;
     public PlayerController infectedPlayer;
+    public Resource infectedResource;
     public InfectionController lv_infectionController;
+    public Light virusLight;
 
     public AudioSource heartbeat_sound;
     public PlayerNetworkListener networkListener;
@@ -102,28 +104,26 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
         canvas = in_canvas;
         crosshair = canvas.crosshair;
         canvas.playerCompass.player = this.transform;
-        playerCamera.gameObject.tag = "MainCamera";
-        playerCamera.enabled = true;
-        playerCamera.GetComponent<AudioListener>().enabled = true;
+        canvas.timeSystem.time = .46f;
         GetComponent<CharacterController>().enabled = true;
         Cursor.lockState = CursorLockMode.Locked;
+        playerCamera.gameObject.SetActive(true);
         userID = getUserID;
         gameObject.name = getUsername;
+        virusLight.gameObject.SetActive(true);
         inControl = true;
     }
 
     public void setOtherPlayer(string getUserID, string getUsername)
     {
-        Debug.Log("Setting second plater");
-        playerCamera.GetComponent<AudioListener>().enabled = false;
         if (canvas != null) canvas.playerCompass.player = null;
         canvas = null;
         crosshair = null;
-        playerCamera.gameObject.tag = "PlayerEyes";
-        playerCamera.enabled = false;
+        playerCamera.gameObject.SetActive(false);
         GetComponent<CharacterController>().enabled = false;
         Cursor.lockState = CursorLockMode.Locked;
         userID = getUserID;
+        virusLight.gameObject.SetActive(false);
         gameObject.name = getUsername;
         inControl = false;
     }
@@ -170,14 +170,15 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
     private void uiUpdater()
     {
 
+        canvas.ammoIndicator.lightLevel.text = (100 * (livingBeing.health / 100)).ToString();
         if (infectedPlayer != null)
         {
+            canvas.energyIndicator.gameObject.SetActive(true);
             canvas.energyIndicator.lightLevel.text = (100 * (infectedPlayer.livingBeing.infectionRate / 100)).ToString();
-            canvas.ammoIndicator.lightLevel.text = (100 * (infectedPlayer.livingBeing.health / 100)).ToString();
         } else
         {
-            canvas.energyIndicator.enabled = false;
-            canvas.ammoIndicator.enabled = false;
+            canvas.energyIndicator.gameObject.SetActive(false);
+//            canvas.ammoIndicator.enabled = false;
         }
     }
 
@@ -236,22 +237,26 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
             case "Infect":
                 negativeInfect(in_payload.target, float.Parse(in_payload.data["Amount"]));
                 break;
-            case "Exit Game Session":
-                playerExit(in_payload.source);
-                break;
             case "Update":
                 serverControl(in_payload.data);
                 break;
             case "Attach":
                 foreach (KeyValuePair<string, VirusController> it_virus in EntityManager.virus)
                 {
-                    IPlayerController lv_survivor = EntityManager.players[in_payload.target];
+                    PlayerController lv_survivor = EntityManager.survivors[in_payload.target];
                     lv_survivor.getInfectionScript().infect(it_virus.Value);
                 }
                 break;
             default:
                 switch (in_payload.data["Action"])
                 {
+                    case "Exhaust Resource":
+                    case "Harvest Resource":
+                        harvestResource(in_payload.source, in_payload.target, in_payload.data);
+                        break;
+                    case "Exit Game Session":
+                        playerExit(in_payload.source);
+                        break;
                     case "Join Game":
                         PlayerController playerSpawn = em.spawnPlayer(in_payload.data);
                         canvas.timeSystem.setTime(StringUtils.convertToFloat(in_payload.data["Time"]));
@@ -377,6 +382,7 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
             case "Interact":
                 Interact();
                 break;
+
         }
     }
 
@@ -422,9 +428,22 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
             || transform.localRotation != Quaternion.Euler(float.Parse(payload["xRot"]), 0, 0))
         {
 
-            StartCoroutine(LerpPosition(StringUtils.getVectorFromJson(payload, "Pos"), .0125f));
             Quaternion newAngle = Quaternion.Euler(0f, float.Parse(payload["yRot"]), 0f);
-            StartCoroutine(LerpRotation(newAngle, .0125f));
+
+            if (payload["Username"].Equals(NetworkMain.Username))
+            {
+                transform.position = StringUtils.getVectorFromJson(payload, "Pos");
+                transform.rotation = newAngle;
+            }
+            else
+            {
+                StartCoroutine(LerpPosition(StringUtils.getVectorFromJson(payload, "Pos"), .0125f));
+                StartCoroutine(LerpRotation(newAngle, .0125f));
+            }
+            //transform.position = StringUtils.getVectorFromJson(payload, "Pos");
+            //transform.rotation = newAngle;
+            //            StartCoroutine(LerpPosition(StringUtils.getVectorFromJson(payload, "Pos"), .0125f));
+//            StartCoroutine(LerpRotation(newAngle, .0125f));
         }
     }
 
@@ -479,8 +498,9 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
     {
         if (col.TryGetComponent<InfectionScript>(out InfectionScript get_infected))
         {
-            if(infectedPlayer == null && name.Equals(NetworkMain.Username))
+            if (infectedPlayer == null && name.Equals(NetworkMain.Username))
             {
+
                 get_infected.infect(this);
                 NetworkMain.broadcastAction("Attach", get_infected.currentPlayer.name);
             }
@@ -524,20 +544,14 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
     }
     public void getHost(PlayerController in_player)
     {
-        //Something wrong here.. null pointer? no crosshair? or no canvas?
         crosshair = canvas.crosshair;
-        //        infectedPlayer = in_player;
-        canvas.energyIndicator.enabled = true;
-        canvas.ammoIndicator.enabled = true;
         canvas.playerCompass.player = in_player.transform;
-        playerCamera.gameObject.tag = "PlayerEyes";
-        in_player.playerCamera.gameObject.tag = "MainCamera";
-        playerCamera.enabled = false;
-        in_player.playerCamera.enabled = true;
-        //        GetComponent<VirusController>().enabled = false;
+        in_player.playerCamera.gameObject.SetActive(true);
+        playerCamera.gameObject.SetActive(false);
+        //playerCamera.enabled = false;
+        //in_player.playerCamera.enabled = true;
         Cursor.lockState = CursorLockMode.Locked;
         canMove = false;
-        //      lv_infectionController.enabled = true;
     }
 
     public void attachToHost(PlayerController in_player)
@@ -547,16 +561,20 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
         transform.localPosition = new Vector3(0f, 0f, 0f);
     }
 
+    public void attachToHost(Resource in_resource)
+    {
+        canMove = false;
+        infectedResource = in_resource;
+        transform.SetParent(in_resource.transform);
+        transform.localPosition = new Vector3(0f, 2f, 0f);
+    }
+
     public void Eject()
     {
 
-        //        lv_virusController.crosshair = null;
-        //        infectedPlayer = in_player;
         canvas.playerCompass.player = transform;
-        infectedPlayer.playerCamera.gameObject.tag = "PlayerEyes";
-        playerCamera.gameObject.tag = "MainCamera";
-        playerCamera.enabled = true;
-        infectedPlayer.playerCamera.enabled = false;
+        infectedPlayer.playerCamera.gameObject.SetActive(false);
+        playerCamera.gameObject.SetActive(true);
         enabled = true;
         Cursor.lockState = CursorLockMode.Locked;
         inControl = true;
@@ -589,6 +607,11 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
         }
     }
 
+    private void harvestResource(string in_harvester_UID, string in_resource_UID, Dictionary<string, string> in_payload){
+        EntityManager.resources.TryGetValue(in_resource_UID, out Resource out_resource);
+        out_resource.harvest(float.Parse(in_payload["Amount"]));
+        livingBeing.health =  livingBeing.health - float.Parse(in_payload["Amount"]) > 100 ? 100 : livingBeing.health - float.Parse(in_payload["Amount"]);
+    }
 
     public void death()
     {
@@ -617,9 +640,30 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
 
     public void fireOne()
     {
+        Dictionary<string, string> payload = new Dictionary<string, string>();
+
+        Physics.Raycast(new Ray(playerCamera.transform.position, playerCamera.transform.forward), out RaycastHit lv_hit, 3f);
+        if (lv_hit.transform != null)
+        {
+            lv_hit.transform.TryGetComponent<Resource>(out Resource out_resource);
+            if (out_resource != null && !out_resource.isDestroyed)
+            {
+                float lv_infect_amt = -(livingBeing.infectionRate * Time.deltaTime)*3;
+                payload.Add("Type", "Player Action");
+                payload.Add("Amount", lv_infect_amt.ToString());
+                if (out_resource.durability - lv_infect_amt > 0)
+                {
+                    payload.Add("Action", "Harvest Resource");
+                }
+                else
+                {
+                    payload.Add("Action", "Exhaust Resource");
+                }
+                NetworkMain.broadcastAction(payload, out_resource.UID);
+            }
+        }
         if (infectedPlayer != null)
         {
-            Dictionary<string, string> payload = new Dictionary<string, string>();
             payload.Add("Action", "Infect");
             payload.Add("Type", "Player Action");
             payload.Add("Amount", (livingBeing.infectionRate * Time.deltaTime).ToString());
@@ -639,7 +683,7 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
     {
     }
 
-    public void toggleCrouching()
+    public void crouching()
     {
     }
 

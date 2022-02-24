@@ -29,7 +29,6 @@ public class Melee : MonoBehaviour, UsableItemInterface, WeaponBaseInterface, IC
     // Update is called once per frame
     void Update()
     {
-
     }
 
     #region Mapper
@@ -119,9 +118,11 @@ public class Melee : MonoBehaviour, UsableItemInterface, WeaponBaseInterface, IC
 
             if (target != null)
             {
-                target.isDamage(true, bladeAddon.damage, owner.gameObject);
-                owner.handAnimator.SetBool("isAttacking", false);
-                durabilityDamage(-5);
+                if (target.isDamage(true, bladeAddon.damage, owner.gameObject))
+                {
+                    owner.handAnimator.SetBool("isAttacking", false);
+                    durabilityDamage(-5);
+                }
             }
         }
     }

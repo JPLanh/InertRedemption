@@ -43,23 +43,24 @@ public class Building : MonoBehaviour, IDamagable, Displayable, IBuilding, IPubl
         poweredBuildings = new List<IBuilding>();
     }
 
-    public GameObject isDamage(bool network, float getValue, GameObject attacker)
+    public bool isDamage(bool network, float getValue, GameObject attacker)
     {
-        durability += getValue;
-        if (durability < 0)
-        {
+        return false;
+        //durability += getValue;
+        //if (durability < 0)
+        //{
 
-            Collider[] hitColliders = Physics.OverlapSphere(this.transform.position, 50);
-            foreach (var hitCollider in hitColliders)
-            {
-                if (hitCollider.TryGetComponent<IBuilding>(out IBuilding getBuilding))
-                {
-                    getBuilding.toggleBuildable(false, this);
-                }
-            }
-            Destroy(this.gameObject);
-        }
-        return null;
+        //    Collider[] hitColliders = Physics.OverlapSphere(this.transform.position, 50);
+        //    foreach (var hitCollider in hitColliders)
+        //    {
+        //        if (hitCollider.TryGetComponent<IBuilding>(out IBuilding getBuilding))
+        //        {
+        //            getBuilding.toggleBuildable(false, this);
+        //        }
+        //    }
+        //    Destroy(this.gameObject);
+        //}
+        //return null;
     }
 
     // Update is called once per frame

@@ -60,6 +60,12 @@ public class SendButton : MonoBehaviour
                         chatBox.text += "You're already in that lobby.\n";
                     }
                     break;
+                case "ready":
+                    NetworkMain.broadcastAction("Ready");
+                    break;
+                case "swap":
+                    NetworkMain.broadcastAction("Swap Team");
+                    break;
                 case "leave":
                     payload["Action"] = "Leave Lobby";
                     payload["Name"] = NetworkMain.LobbyID;

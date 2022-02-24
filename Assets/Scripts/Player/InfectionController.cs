@@ -226,7 +226,7 @@ public class InfectionController : MonoBehaviour, IPlayerController
     {
     }
 
-    public void toggleCrouching()
+    public void crouching()
     {
     }
 

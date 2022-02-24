@@ -102,7 +102,7 @@ public class BasicMovement : MonoBehaviour
     private void gravity()
     {
         moveDirection.y -= lv_playerController.livingBeing.gravity * Time.deltaTime;
-        if (moveDirection.y < -1)
+        if (moveDirection.y > 1 || moveDirection.y < -2)
         {
             walking_footstep.Stop();
             running_footstep.Stop();
@@ -142,7 +142,7 @@ public class BasicMovement : MonoBehaviour
         {
             lastPos = lead.transform.position;
             lastRot = rotation;
-            Dictionary<string, string> payload = StringUtils.getPositionAndRotation(lead.transform.position, rotation);
+            Dictionary<string, string> payload = StringUtils.getPositionAndCameraRotation(lead.transform.position, rotation, lv_playerController.livingBeing.upperBody.transform.localRotation.eulerAngles);
             payload["Action"] = "Update";
             payload["Type"] = "Player Update";
             payload["State"] = "Alive";
@@ -152,7 +152,8 @@ public class BasicMovement : MonoBehaviour
             payload["UserID"] = NetworkMain.UserID;
             payload["Team"] = NetworkMain.Team;
             payload["health"] = lv_playerController.livingBeing.health.ToString();
-//            payload["host"] = NetworkMain.isHost.ToString();
+            payload["insanity"] = lv_playerController.insanityLevel.ToString();
+            //            payload["host"] = NetworkMain.isHost.ToString();
 
             lastUpdate = Time.time + 1f / updateTimer;
             lv_playerController.serverControl(payload);
@@ -173,8 +174,10 @@ public class BasicMovement : MonoBehaviour
         }
         else
         {
+            Debug.Log(running_footstep.isPlaying);
             if (!running_footstep.isPlaying && lv_playerController.isGrounded)
             {
+                Debug.Log("Is running");
                 walking_footstep.Stop();
                 running_footstep.Play();
             }
@@ -194,11 +197,11 @@ public class BasicMovement : MonoBehaviour
         {
             lv_playerController.livingBeing.legsAnimator.SetBool("Walking", lv_playerController.livingBeing.legsAnimator.GetBool("Walking"));
             lv_playerController.livingBeing.legsAnimator.SetBool("Running", !lv_playerController.livingBeing.legsAnimator.GetBool("Walking"));
-            playMovementSound();
+//            playMovementSound();
         }
         else
         {
-            stopMovementSound();
+//            stopMovementSound();
             lv_playerController.livingBeing.legsAnimator.SetBool("Running", false);
             lv_playerController.livingBeing.legsAnimator.SetBool("Walking", false);
         }

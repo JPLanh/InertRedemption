@@ -25,6 +25,9 @@ public class BodyFlashLightAddon : MonoBehaviour, IAddon
     private Light lightsource;
     private Dictionary<string, int> requirements;
 
+    public AudioSource lightOnAudio;
+    public AudioSource lightOffAudio;
+
     public int getLevel()
     {
         return addonLevel;
@@ -97,9 +100,15 @@ public class BodyFlashLightAddon : MonoBehaviour, IAddon
     public void toggle()
     {
         if (lightsource.enabled)
+        {
             lightsource.enabled = false;
+            lightOffAudio.Play();
+        }
         else
+        {
             lightsource.enabled = true;
+            lightOnAudio.Play();
+        }
     }
 
     public string getInfo()

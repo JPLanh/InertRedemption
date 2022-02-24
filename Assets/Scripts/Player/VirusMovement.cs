@@ -34,7 +34,7 @@ public class VirusMovement : MonoBehaviour
     {
         if (lv_playerController.inControl)
         {
-            if (!NetworkMain.local && lv_playerController.canMove) PositionalUpdate();
+            if (!NetworkMain.local) PositionalUpdate();
 
             if (lv_playerController.canLook)
             {
@@ -72,7 +72,10 @@ public class VirusMovement : MonoBehaviour
 
     private void gravity()
     {
-        moveDirection.y -= lv_playerController.livingBeing.gravity * Time.deltaTime;
+        if (lv_playerController.infectedResource == null && lv_playerController.infectedPlayer == null)
+        {
+            moveDirection.y -= lv_playerController.livingBeing.gravity * Time.deltaTime;
+        }
     }
     private void fpsCameraView()
     {
@@ -82,6 +85,8 @@ public class VirusMovement : MonoBehaviour
 
         rotation.x += -Input.GetAxis("Mouse Y") * lv_playerController.livingBeing.lookSensativity;
         rotation.x = Mathf.Clamp(rotation.x, -lookXLimit, lookXLimit);
+        lead.transform.eulerAngles = new Vector2(0, rotation.y);
+        lv_playerController.playerCamera.transform.eulerAngles = new Vector2(rotation.x, rotation.y);
 
         //switch (lookState)
         //{
@@ -93,33 +98,32 @@ public class VirusMovement : MonoBehaviour
         //        break;
         //}
 
-//        lv_playerController.livingBeing.upperBody.transform.localRotation = Quaternion.Euler(rotation.x, 0, 0);
+        //        lv_playerController.livingBeing.upperBody.transform.localRotation = Quaternion.Euler(rotation.x, 0, 0);
         //        transform.eulerAngles = new Vector2(0, rotation.y);
-        lead.transform.eulerAngles = new Vector2(rotation.x, rotation.y);
         ///////////////
-//        rotation.y += Input.GetAxis("Mouse X") * lv_playerController.livingBeing.lookSensativity;
-//        rotation.z = 0;
+        //        rotation.y += Input.GetAxis("Mouse X") * lv_playerController.livingBeing.lookSensativity;
+        //        rotation.z = 0;
 
-//            rotation.x += -Input.GetAxis("Mouse Y") * lv_playerController.livingBeing.lookSensativity;
-//            rotation.x = Mathf.Clamp(rotation.x, -lookXLimit, lookXLimit);
+        //            rotation.x += -Input.GetAxis("Mouse Y") * lv_playerController.livingBeing.lookSensativity;
+        //            rotation.x = Mathf.Clamp(rotation.x, -lookXLimit, lookXLimit);
 
-//            //switch (lookState)
-//            //{
-//            //    case "Tall Shield":
-//            //        rotation.x = Mathf.Clamp(rotation.x, tallShieldLookXLo, tallShieldLookXHi);
-//            //        break;
-//            //    default:
-//            //        rotation.x = Mathf.Clamp(rotation.x, -lookXLimit, lookXLimit);
-//            //        break;
-//            //}
+        //            //switch (lookState)
+        //            //{
+        //            //    case "Tall Shield":
+        //            //        rotation.x = Mathf.Clamp(rotation.x, tallShieldLookXLo, tallShieldLookXHi);
+        //            //        break;
+        //            //    default:
+        //            //        rotation.x = Mathf.Clamp(rotation.x, -lookXLimit, lookXLimit);
+        //            //        break;
+        //            //}
 
-////            lv_playerController.playerCamera.transform.localRotation = Quaternion.Euler(rotation.x, 0, 0);
-//        lead.transform.eulerAngles = new Vector2(0, rotation.y);
+        ////            lv_playerController.playerCamera.transform.localRotation = Quaternion.Euler(rotation.x, 0, 0);
+        //        lead.transform.eulerAngles = new Vector2(0, rotation.y);
     }
 
     public void PositionalUpdate()
     {
-        if (Time.time >= lastUpdate && (lastRot != rotation || lastPos != lead.transform.position))
+        if (Time.time >= lastUpdate && lv_playerController.infectedPlayer == null &&  (lastRot != rotation || lastPos != lead.transform.position))
         {
             lastPos = lead.transform.position;
             lastRot = rotation;
@@ -129,15 +133,16 @@ public class VirusMovement : MonoBehaviour
             payload["Type"] = "Player Update";
             payload["WeaponState"] = StringUtils.convertIntToString(lv_playerController.weaponState);
 
-            payload["name"] = NetworkMain.Username;
+            payload["Username"] = NetworkMain.Username;
             payload["UserID"] = NetworkMain.UserID;
             payload["Team"] = NetworkMain.Team;
             payload["health"] = lv_playerController.livingBeing.health.ToString();
-//            payload["host"] = NetworkMain.isHost.ToString();
+            //            payload["host"] = NetworkMain.isHost.ToString();
 
             lastUpdate = Time.time + 1f / 45f;
-            NetworkMain.broadcastAction(payload);
-//            NetworkMain.socket.Emit("Update", StringUtils.convertPayloadToJson(payload));
+            lv_playerController.serverControl(payload);
+            NetworkMain.broadcastToOther(payload);
+            //            NetworkMain.socket.Emit("Update", StringUtils.convertPayloadToJson(payload));
         }
     }
 

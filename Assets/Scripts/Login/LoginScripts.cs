@@ -13,6 +13,8 @@ public class LoginScripts : MonoBehaviour, ButtonListenerInterface
     private ToastNotifications toast;
     bool actionable = true;
     private float spamTimer;
+
+    [SerializeField] Transform menu;
     public Dictionary<string, GameObject> labelList = new Dictionary<string, GameObject>();
     [SerializeField] EnjinScript lv_enjin;
     [SerializeField] Transform displayList;
@@ -112,7 +114,7 @@ public class LoginScripts : MonoBehaviour, ButtonListenerInterface
             switch (getString)
             {
                 case "Go Online":
-                    foreach (Transform child in transform)
+                    foreach (Transform child in menu)
                     {
                         child.GetChild(0).transform.GetComponent<Animator>().SetBool("Active", false);
                     }
@@ -123,7 +125,7 @@ public class LoginScripts : MonoBehaviour, ButtonListenerInterface
                     IpField.SetActive(false);
                     break;
                 case "Return back to main menu":
-                    foreach (Transform child in transform)
+                    foreach (Transform child in menu)
                     {
                         child.GetChild(0).transform.GetComponent<Animator>().SetBool("Active", false);
                     }
@@ -133,7 +135,7 @@ public class LoginScripts : MonoBehaviour, ButtonListenerInterface
 
                     break;
                 case "Go Offline":
-                    foreach (Transform child in transform)
+                    foreach (Transform child in menu)
                     {
                         child.GetChild(0).transform.GetComponent<Animator>().SetBool("Active", false);
                     }
@@ -142,7 +144,7 @@ public class LoginScripts : MonoBehaviour, ButtonListenerInterface
                     createNewButton("Back", "Return back to main menu", new Vector3(0f, -145f, 0f));
                     break;
                 case "Create Game":
-                    foreach (Transform child in transform)
+                    foreach (Transform child in menu)
                     {
                         child.GetChild(0).transform.GetComponent<Animator>().SetBool("Active", false);
                     }
@@ -172,7 +174,7 @@ public class LoginScripts : MonoBehaviour, ButtonListenerInterface
                     //SceneManager.LoadScene("mainScene");
                     break;
                 case "Join Host":
-                    foreach (Transform child in transform)
+                    foreach (Transform child in menu)
                     {
                         child.GetChild(0).transform.GetComponent<Animator>().SetBool("Active", false);
                     }
@@ -245,7 +247,7 @@ public class LoginScripts : MonoBehaviour, ButtonListenerInterface
                     }
                     break;
                 case "Register Enjin Wallet":
-                    foreach (Transform child in transform)
+                    foreach (Transform child in menu)
                     {
                         child.GetChild(0).transform.GetComponent<Animator>().SetBool("Active", false);
                     }
@@ -326,8 +328,8 @@ public class LoginScripts : MonoBehaviour, ButtonListenerInterface
         menuObj.GetComponent<MenuSelection>().getButton.GetComponent<MenuButton>().actionListener = this;
         menuObj.GetComponent<MenuSelection>().actionListener = this;
         menuObj.GetComponent<Animator>().SetBool("Active", true);
-        newMenu.transform.SetParent(transform);
-        newMenu.transform.position = transform.position + position;
+        newMenu.transform.SetParent(menu);
+        newMenu.transform.position = menu.position + position;
         newMenu.transform.localScale = new Vector3(.6f, .6f, .6f);
         newMenu.name = text;
     }
