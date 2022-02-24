@@ -67,8 +67,8 @@ public class NetworkSocketIO : MonoBehaviour
         {
             if (EntityManager.survivors.Count == 0 && lv_canvas.countDownTimer == 10 && gameBegin)
             {
-                lv_canvas.initLoadingScreen("Virus has eliminated all players. Virus Wins");
-                lv_canvas.gameOver();
+//                lv_canvas.initLoadingScreen("Virus has eliminated all players. Virus Wins");
+//                lv_canvas.gameOver();
             }
             if (NetworkMain.serverResponse.Count > 0)
             {
@@ -116,7 +116,6 @@ public class NetworkSocketIO : MonoBehaviour
 //                            Debug.Log(getPayload.source + " is joining");
                             if (!EntityManager.players.ContainsKey(getPayload.source))
                             {
-                                Debug.Log("Does not exists");
                                 em.spawnPlayer(getPayload.data);
                                 Dictionary<string, string> payload = new Dictionary<string, string>();
                                 payload.Add("Username", NetworkMain.Username);

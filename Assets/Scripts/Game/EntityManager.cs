@@ -188,7 +188,7 @@ public class EntityManager : MonoBehaviour
         Dictionary<string, string> newPayload = loadPlayer(payload["Username"], payload["UserID"], payload["Team"], out PlayerController out_playerController, out VirusController out_virusController);
         if (out_playerController != null)
         {
-            out_playerController.toggleFlashLight();
+//            out_playerController.toggleFlashLight();
             out_playerController.survivorsGO = survivorPlaceHolder;
             out_playerController.networkListener = new PlayerNetworkListener(payload["Username"]);
             out_playerController.networkListener.controller = out_playerController;

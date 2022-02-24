@@ -51,6 +51,18 @@ public class StringUtils
         return payload;
     }
 
+    public static Dictionary<string, string> getPositionAndCameraRotation(Vector3 getPosition, Vector3 getRotation, Vector3 getCameraRotation)
+    {
+        Dictionary<string, string> payload = new Dictionary<string, string>();
+        payload["xPos"] = Convert.ToString(getPosition.x);
+        payload["yPos"] = Convert.ToString(getPosition.y);
+        payload["zPos"] = Convert.ToString(getPosition.z);
+        payload["xRot"] = Convert.ToString(getCameraRotation.x);
+        payload["yRot"] = Convert.ToString(getRotation.y);
+        payload["zRot"] = Convert.ToString(getRotation.z);
+        return payload;
+    }
+
     public static Dictionary<string, string> getPositionAndRotation(Vector3 getPosition, Quaternion getRotation)
     {
         Dictionary<string, string> payload = new Dictionary<string, string>();

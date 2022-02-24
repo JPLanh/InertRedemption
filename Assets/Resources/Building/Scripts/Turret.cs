@@ -125,19 +125,20 @@ public class Turret : MonoBehaviour, IDamagable, Displayable, IBuilding, Interac
     }
 
 
-    public GameObject isDamage(bool network, float getValue, GameObject attacker)
+    public bool isDamage(bool network, float getValue, GameObject attacker)
     {
-        durability += getValue;
+        return false;
+        //durability += getValue;
 
-        if (durability < 0)
-        {
-            //           Instantiate(loot, this.transform.position + new Vector3(0, 2f, 0), Quaternion.identity);
+        //if (durability < 0)
+        //{
+        //    //           Instantiate(loot, this.transform.position + new Vector3(0, 2f, 0), Quaternion.identity);
 
-            emitter.addCurrent(-buildingCurrent);
-            Destroy(this.gameObject);
-        }
+        //    emitter.addCurrent(-buildingCurrent);
+        //    Destroy(this.gameObject);
+        //}
 
-        return null;
+        //return null;
     }
 
     //public string display()

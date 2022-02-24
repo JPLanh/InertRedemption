@@ -14,7 +14,7 @@ public interface IPlayerController
     public void toggleFlashLight();
     public void jump();
     public void reload(bool in_bool);
-    public void toggleCrouching();
+    public void crouching();
     public void fireTwo();
     public void Interact();
     public void useAbility(int in_num);
