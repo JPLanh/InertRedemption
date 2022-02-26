@@ -273,4 +273,17 @@ public class InfectionController : MonoBehaviour, IPlayerController
     {
 
     }
+
+    public void listen(Payload in_payload)
+    {
+
+    }
+
+    public Inventory getInventory()
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public bool pickupItem(string in_item)
+    { return false; }
 }

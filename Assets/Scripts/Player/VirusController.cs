@@ -498,9 +498,9 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
     {
         if (col.TryGetComponent<InfectionScript>(out InfectionScript get_infected))
         {
-            if (infectedPlayer == null && name.Equals(NetworkMain.Username))
+            if (infectedPlayer == null && name.Equals(NetworkMain.Username) && get_infected.currentVirus == null)
             {
-
+                Debug.Log("Attaching");
                 get_infected.infect(this);
                 NetworkMain.broadcastAction("Attach", get_infected.currentPlayer.name);
             }
@@ -573,6 +573,7 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
     {
 
         canvas.playerCompass.player = transform;
+        infectedPlayer.ifs.currentVirus = null;
         infectedPlayer.playerCamera.gameObject.SetActive(false);
         playerCamera.gameObject.SetActive(true);
         enabled = true;
@@ -715,5 +716,20 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
     public void saveUpgrades()
     {
 
+    }
+
+    public void listen(Payload in_payload)
+    {
+
+    }
+
+
+    public Inventory getInventory()
+    {
+        throw new System.NotImplementedException();
+    }
+    public bool pickupItem(string in_item)
+    {
+        return false;
     }
 }

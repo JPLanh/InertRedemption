@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ConsoleButton : MonoBehaviour
+public class UIConsoleButton : MonoBehaviour
 {
     [SerializeField]
     private Text buttonName;

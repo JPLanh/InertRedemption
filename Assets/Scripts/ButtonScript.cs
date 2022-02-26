@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ButtonScript : MonoBehaviour
+public class ButtonScript : MonoBehaviour, Interactable
 {
     public string action;
     // Start is called before the first frame update
@@ -20,5 +20,11 @@ public class ButtonScript : MonoBehaviour
     public void buttonClick()
     {
         NetworkMain.broadcastAction(action);
+    }
+
+    public void Interact(PlayerController player)
+    {
+        if (NetworkMain.Username.Equals(player.name))
+            buttonClick();
     }
 }

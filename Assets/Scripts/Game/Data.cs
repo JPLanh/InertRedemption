@@ -53,20 +53,20 @@ public class Data : MonoBehaviour, Interactable, Displayable
     {
         if (NetworkMain.Username == player.name)
         {
-            if (player.pickupItem(this))
-            {
-                Dictionary<string, string> payload = new Dictionary<string, string>();
-                payload["UID"] = UID;
-                payload["Action"] = "Pickup Item";
-                payload["Type"] = "Action";
-                NetworkMain.broadcastAction(payload);
-                //                Dictionary<string, string> payload = new Dictionary<string, string>();
-                //                payload["UID"] = UID;
-                //                payload["Action"] = "Pickup Item";
-                //print(StringUtils.convertPayloadToJson(payload));
-                //                NetworkMain.messageServer(payload);
-//                Destroy(gameObject);
-            }
+            Dictionary<string, string> payload = new Dictionary<string, string>();
+            payload["UID"] = UID;
+            payload["Action"] = "Pickup Item";
+            payload["Type"] = "Action";
+            NetworkMain.broadcastAction(payload);
+//            if (player.pickupItem(this))
+//            {
+//                //                Dictionary<string, string> payload = new Dictionary<string, string>();
+//                //                payload["UID"] = UID;
+//                //                payload["Action"] = "Pickup Item";
+//                //print(StringUtils.convertPayloadToJson(payload));
+//                //                NetworkMain.messageServer(payload);
+////                Destroy(gameObject);
+//            }
         }
     }
 

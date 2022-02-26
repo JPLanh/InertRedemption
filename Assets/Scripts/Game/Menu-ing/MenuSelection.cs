@@ -6,6 +6,7 @@ using UnityEngine.UI;
 public class MenuSelection : MonoBehaviour
 {
     public Button getButton;
+    public MenuButton lv_buttonScript;
     public Text getButtonText;
     public Text getAmountText;
     public bool shopItem = false;

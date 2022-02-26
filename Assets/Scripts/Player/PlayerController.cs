@@ -41,7 +41,6 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
     public GameObject harvester;
 
     private float spamTimer = 0f;
-    public int dataCount = 0;
     public string teamColor;
     public bool autorun = false;
 
@@ -55,6 +54,7 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
     private bool isAlive = true;
     public bool getDamage = false;
     public bool onLedge = false;
+    public bool inShip = true;
     public Image damageIndicator;
 
     public bool isLocal = false;
@@ -67,7 +67,7 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
 
     public bool singleHandUse = false;
 
-    private GameObject mainMenuGO;
+    private PlayerHubUI hudDisplay;
     private string resourceRemember;
 
     public Armor armor;
@@ -666,7 +666,7 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
     public void buildModeSwitch()
     {
         //Menu os dosabled
-        if (mainMenuGO == null)
+        if (hudDisplay == null)
         {
             //If building is active
             if (buildPlacement == null)
@@ -842,67 +842,67 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
 
     public void accessEqConsole(bool isLocal, bool activating)
     {
-        if (activating)
-        {
-            if (mainMenuGO == null)
-            {
-                livingBeing.handAnimator.SetBool("accessMenu", true);
-                mainMenuGO = Instantiate(Resources.Load<GameObject>("Display/Equiptment Console"), transform.position, Quaternion.identity);
-                mainMenuGO.transform.SetParent(playerCamera.transform);
-                mainMenuGO.transform.localPosition = new Vector3(-.2f, .25f, 2f);
-                mainMenuGO.transform.localScale = new Vector3(.005f, .005f, .005f);
-                mainMenuGO.transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
-                displayInterface.SetActive(false);
-                livingBeing.setAnimation("isAiming", false);
-                //                canLook = false;
-                if (name.Equals(NetworkMain.Username))
-                {
-                    Cursor.lockState = CursorLockMode.None;
-                    crosshair.SetActive(false);
-                }
+        //if (activating)
+        //{
+        //    if (hudDisplay == null)
+        //    {
+        //        livingBeing.handAnimator.SetBool("accessMenu", true);
+        //        hudDisplay = Instantiate(Resources.Load<GameObject>("Display/Equiptment Console"), transform.position, Quaternion.identity);
+        //        hudDisplay.transform.SetParent(playerCamera.transform);
+        //        hudDisplay.transform.localPosition = new Vector3(-.2f, .25f, 2f);
+        //        hudDisplay.transform.localScale = new Vector3(.005f, .005f, .005f);
+        //        hudDisplay.transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
+        //        displayInterface.SetActive(false);
+        //        livingBeing.setAnimation("isAiming", false);
+        //        //                canLook = false;
+        //        if (name.Equals(NetworkMain.Username))
+        //        {
+        //            Cursor.lockState = CursorLockMode.None;
+        //            crosshair.SetActive(false);
+        //        }
 
-                //-33
-                consoleUIMenu(livingBeing.currentWeapon.name, "Select Current", "Current Weapon", new Vector3(0f, 13, 0f), mainMenuGO.GetComponent<ConsoleUI>().weaponUI);
-                consoleUIMenu(livingBeing.offWeapon.name, "Select Off", "Off Weapon", new Vector3(0f, -20, 0f), mainMenuGO.GetComponent<ConsoleUI>().weaponUI);
+        //        //-33
+        //        consoleUIMenu(livingBeing.currentWeapon.name, "Select Current", "Current Weapon", new Vector3(0f, 13, 0f), hudDisplay.GetComponent<ConsoleUI>().weaponUI);
+        //        consoleUIMenu(livingBeing.offWeapon.name, "Select Off", "Off Weapon", new Vector3(0f, -20, 0f), hudDisplay.GetComponent<ConsoleUI>().weaponUI);
 
-                consoleUIMenu(visor.getName(), "Select Visor", "Visor", new Vector3(0f, 49f, 0f), mainMenuGO.GetComponent<ConsoleUI>().BodyUI);
-                consoleUIMenu(armor.GetComponent<IArmor>().getName(), "Select Armor", "Armor", new Vector3(0f, 49f - (1 * 33), 0f), mainMenuGO.GetComponent<ConsoleUI>().BodyUI);
-                consoleUIMenu(feet.getName(), "Select Feet", "Feet", new Vector3(0f, 49f - (2 * 33), 0f), mainMenuGO.GetComponent<ConsoleUI>().BodyUI);
-                consoleUIMenu(inventory.getName(), "Select Inventory", "Inventory", new Vector3(0f, 49f - (3 * 33), 0f), mainMenuGO.GetComponent<ConsoleUI>().BodyUI);
+        //        consoleUIMenu(visor.getName(), "Select Visor", "Visor", new Vector3(0f, 49f, 0f), hudDisplay.GetComponent<ConsoleUI>().BodyUI);
+        //        consoleUIMenu(armor.GetComponent<IArmor>().getName(), "Select Armor", "Armor", new Vector3(0f, 49f - (1 * 33), 0f), hudDisplay.GetComponent<ConsoleUI>().BodyUI);
+        //        consoleUIMenu(feet.getName(), "Select Feet", "Feet", new Vector3(0f, 49f - (2 * 33), 0f), hudDisplay.GetComponent<ConsoleUI>().BodyUI);
+        //        consoleUIMenu(inventory.getName(), "Select Inventory", "Inventory", new Vector3(0f, 49f - (3 * 33), 0f), hudDisplay.GetComponent<ConsoleUI>().BodyUI);
 
-            }
-            else
-            {
-                if (mainMenuGO.transform.GetChild(0).TryGetComponent<mainMenu>(out mainMenu menu))
-                {
+        //    }
+        //    else
+        //    {
+        //        if (hudDisplay.transform.GetChild(0).TryGetComponent<mainMenu>(out mainMenu menu))
+        //        {
 
-                    if (menu.state == "Building")
-                    {
-                        accessBuilding(true);
-                        accessEqConsole(true, true);
-                    }
-                    else if (menu.state == "Main Menu")
-                    {
-                        accessMenu(true);
-                        accessEqConsole(true, true);
-                    }
-                }
-            }
-        }
-        else
-        {
-            livingBeing.handAnimator.SetBool("accessMenu", false);
-            Destroy(mainMenuGO);
-            //            mainMenuGO.transform.GetChild(0).GetComponent<mainMenu>().animator.SetBool("isActive", false);
-            mainMenuGO = null;
-            canLook = true;
-            //            sendAction("Menu");
-            if (name.Equals(NetworkMain.Username))
-            {
-                Cursor.lockState = CursorLockMode.Locked;
-                crosshair.SetActive(true);
-            }
-        }
+        //            if (menu.state == "Building")
+        //            {
+        //                accessBuilding(true);
+        //                accessEqConsole(true, true);
+        //            }
+        //            else if (menu.state == "Main Menu")
+        //            {
+        //                accessMenu(true);
+        //                accessEqConsole(true, true);
+        //            }
+        //        }
+        //    }
+        //}
+        //else
+        //{
+        //    livingBeing.handAnimator.SetBool("accessMenu", false);
+        //    Destroy(hudDisplay);
+        //    //            mainMenuGO.transform.GetChild(0).GetComponent<mainMenu>().animator.SetBool("isActive", false);
+        //    hudDisplay = null;
+        //    canLook = true;
+        //    //            sendAction("Menu");
+        //    if (name.Equals(NetworkMain.Username))
+        //    {
+        //        Cursor.lockState = CursorLockMode.Locked;
+        //        crosshair.SetActive(true);
+        //    }
+        //}
     }
 
     private void consoleUIMenu(string getButtonName, string getAction, string getTextLabel, Vector3 getPosition, Transform parentTransform)
@@ -910,8 +910,8 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
 
         GameObject subMenu = Instantiate(Resources.Load<GameObject>("Display/Console_Button"), transform.position, Quaternion.identity);
         subMenu.transform.SetParent(parentTransform);
-        subMenu.GetComponent<ConsoleButton>().setButton(getButtonName, getAction);
-        subMenu.GetComponent<ConsoleButton>().actionListener = this;
+        subMenu.GetComponent<UIConsoleButton>().setButton(getButtonName, getAction);
+        subMenu.GetComponent<UIConsoleButton>().actionListener = this;
         subMenu.transform.localPosition = getPosition;
         subMenu.transform.localScale = new Vector3(1f, 1f, 1f);
         subMenu.transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
@@ -926,20 +926,14 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
 
     public void accessMenu(bool isLocal)
     {
-        if (mainMenuGO == null)
+        if (hudDisplay == null)
         {
+            Instantiate(Resources.Load<GameObject>("UI/Player UI Hub"), livingBeing.upperBody).TryGetComponent<PlayerHubUI>(out hudDisplay);
+            hudDisplay.TryGetComponent<PlayerHubUI>(out PlayerHubUI out_hub);
             livingBeing.handAnimator.SetBool("accessMenu", true);
-            mainMenuGO = Instantiate(Resources.Load<GameObject>("Display/Main"), transform.position, Quaternion.identity);
-            mainMenuGO.transform.SetParent(playerCamera.transform);
-            mainMenuGO.transform.localPosition = new Vector3(-1.75f, .75f, 2f);
-            mainMenuGO.transform.localScale = new Vector3(.005f, .005f, .005f);
-            mainMenuGO.transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
-            mainMenuGO.transform.GetChild(0).GetComponent<mainMenu>().playerController = this;
-            mainMenuGO.transform.GetChild(0).GetComponent<mainMenu>().mainUI();
-            displayInterface.SetActive(false);
+            out_hub.init(this);
             canLook = false;
-            //sendAction("Menu");
-            if (isLocal)
+            if (NetworkMain.Username.Equals(name))
             {
                 Cursor.lockState = CursorLockMode.None;
                 livingBeing.setAnimation("isAiming", false);
@@ -948,80 +942,112 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
         }
         else
         {
-            if (mainMenuGO.transform.GetChild(0).TryGetComponent<mainMenu>(out mainMenu menu))
+            hudDisplay.closeMenu();
+            Destroy(hudDisplay.gameObject);
+            livingBeing.handAnimator.SetBool("accessMenu", false);
+            canLook = true;
+            if (NetworkMain.Username.Equals(name))
             {
-
-                if (menu.state == "Building")
-                {
-                    accessBuilding(true);
-                    accessMenu(true);
-                }
-                else if (menu.state == "Main Menu")
-                {
-                    livingBeing.handAnimator.SetBool("accessMenu", false);
-                    Destroy(mainMenuGO);
-                    //            mainMenuGO.transform.GetChild(0).GetComponent<mainMenu>().animator.SetBool("isActive", false);
-                    mainMenuGO = null;
-                    canLook = true;
-                    //sendAction("Menu");
-                    if (isLocal)
-                    {
-                        Cursor.lockState = CursorLockMode.Locked;
-                        crosshair.SetActive(true);
-                    }
-                }
+                Cursor.lockState = CursorLockMode.Locked;
+                crosshair.SetActive(true);
             }
         }
+        //if (mainMenuGO == null)
+        //{
+        //    livingBeing.handAnimator.SetBool("accessMenu", true);
+        //    mainMenuGO = Instantiate(Resources.Load<GameObject>("Display/Main"), transform.position, Quaternion.identity);
+        //    mainMenuGO.transform.SetParent(playerCamera.transform);
+        //    mainMenuGO.transform.localPosition = new Vector3(-1.75f, .75f, 2f);
+        //    mainMenuGO.transform.localScale = new Vector3(.005f, .005f, .005f);
+        //    mainMenuGO.transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
+        //    mainMenuGO.transform.GetChild(0).GetComponent<mainMenu>().playerController = this;
+        //    mainMenuGO.transform.GetChild(0).GetComponent<mainMenu>().mainUI();
+        //    displayInterface.SetActive(false);
+        //    canLook = false;
+        //    //sendAction("Menu");
+        //    if (isLocal)
+        //    {
+        //        Cursor.lockState = CursorLockMode.None;
+        //        livingBeing.setAnimation("isAiming", false);
+        //        crosshair.SetActive(false);
+        //    }
+        //}
+        //else
+        //{
+        //    if (mainMenuGO.transform.GetChild(0).TryGetComponent<mainMenu>(out mainMenu menu))
+        //    {
+
+        //        if (menu.state == "Building")
+        //        {
+        //            accessBuilding(true);
+        //            accessMenu(true);
+        //        }
+        //        else if (menu.state == "Main Menu")
+        //        {
+        //            livingBeing.handAnimator.SetBool("accessMenu", false);
+        //            Destroy(mainMenuGO);
+        //            //            mainMenuGO.transform.GetChild(0).GetComponent<mainMenu>().animator.SetBool("isActive", false);
+        //            mainMenuGO = null;
+        //            canLook = true;
+        //            //sendAction("Menu");
+        //            if (isLocal)
+        //            {
+        //                Cursor.lockState = CursorLockMode.Locked;
+        //                crosshair.SetActive(true);
+        //            }
+        //        }
+        //    }
+        //}
     }
 
     public void accessBuilding(bool isLocal)
     {
-        if (mainMenuGO == null)
-        {
-            livingBeing.handAnimator.SetBool("accessMenu", true);
-            mainMenuGO = Instantiate(Resources.Load<GameObject>("Display/Main"), transform.position, Quaternion.identity);
-            mainMenuGO.transform.SetParent(playerCamera.transform);
-            mainMenuGO.transform.localPosition = new Vector3(-1.75f, .75f, 2f);
-            mainMenuGO.transform.localScale = new Vector3(.005f, .005f, .005f);
-            mainMenuGO.transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
-            mainMenuGO.transform.GetChild(0).GetComponent<mainMenu>().playerController = this;
-            mainMenuGO.transform.GetChild(0).GetComponent<mainMenu>().buildUI();
-            displayInterface.SetActive(false);
-            canLook = false;
-            //sendAction("Menu");
-            if (isLocal)
-            {
-                Cursor.lockState = CursorLockMode.None;
-                livingBeing.setAnimation("isAiming", false);
-                crosshair.SetActive(false);
-            }
-        }
-        else
-        {
-            if (mainMenuGO.transform.GetChild(0).TryGetComponent<mainMenu>(out mainMenu menu))
-            {
-                if (mainMenuGO.transform.GetChild(0).GetComponent<mainMenu>().state == "Main Menu")
-                {
-                    accessMenu(true);
-                    accessBuilding(true);
-                }
-                else if (mainMenuGO.transform.GetChild(0).GetComponent<mainMenu>().state == "Building")
-                {
-                    livingBeing.handAnimator.SetBool("accessMenu", false);
-                    Destroy(mainMenuGO);
-                    //            mainMenuGO.transform.GetChild(0).GetComponent<mainMenu>().animator.SetBool("isActive", false);
-                    mainMenuGO = null;
-                    canLook = true;
-                    //sendAction("Menu");
-                    if (isLocal)
-                    {
-                        Cursor.lockState = CursorLockMode.Locked;
-                        crosshair.SetActive(true);
-                    }
-                }
-            }
+        //if (hudDisplay == null)
+        //{
+        //    livingBeing.handAnimator.SetBool("accessMenu", true);
+        //    hudDisplay = Instantiate(Resources.Load<GameObject>("Display/Main"), transform.position, Quaternion.identity);
+        //    hudDisplay.transform.SetParent(playerCamera.transform);
+        //    hudDisplay.transform.localPosition = new Vector3(-1.75f, .75f, 2f);
+        //    hudDisplay.transform.localScale = new Vector3(.005f, .005f, .005f);
+        //    hudDisplay.transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
+        //    hudDisplay.transform.GetChild(0).GetComponent<mainMenu>().playerController = this;
+        //    hudDisplay.transform.GetChild(0).GetComponent<mainMenu>().buildUI();
+        //    displayInterface.SetActive(false);
+        //    canLook = false;
+        //    //sendAction("Menu");
+        //    if (isLocal)
+        //    {
+        //        Cursor.lockState = CursorLockMode.None;
+        //        livingBeing.setAnimation("isAiming", false);
+        //        crosshair.SetActive(false);
+        //    }
+        //}
+        //else
+        //{
+        //    if (hudDisplay.transform.GetChild(0).TryGetComponent<mainMenu>(out mainMenu menu))
+        //    {
+        //        if (hudDisplay.transform.GetChild(0).GetComponent<mainMenu>().state == "Main Menu")
+        //        {
+        //            accessMenu(true);
+        //            accessBuilding(true);
+        //        }
+        //        else if (hudDisplay.transform.GetChild(0).GetComponent<mainMenu>().state == "Building")
+        //        {
+        //            livingBeing.handAnimator.SetBool("accessMenu", false);
+        //            Destroy(hudDisplay);
+        //            //            mainMenuGO.transform.GetChild(0).GetComponent<mainMenu>().animator.SetBool("isActive", false);
+        //            hudDisplay = null;
+        //            canLook = true;
+        //            //sendAction("Menu");
+        //            if (isLocal)
+        //            {
+        //                Cursor.lockState = CursorLockMode.Locked;
+        //                crosshair.SetActive(true);
+        //            }
+        //        }
+        //    }
 
-        }
+        //}
         //if (!livingBeing.handAnimator.GetBool("isBuilding") && !livingBeing.handAnimator.GetBool("isReloading"))
         //{
         //    bool tempBool = livingBeing.handAnimator.GetBool("accessMenu") ? false : true;
@@ -1130,6 +1156,7 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
                 serverControl(in_payload.data);
                 break;
             case "Attach":
+                Debug.Log("Attaching perform");
                 foreach (KeyValuePair<string, VirusController> it_virus in EntityManager.virus)
                 {
                     getInfectionScript().infect(it_virus.Value);
@@ -1145,6 +1172,9 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
             default:
                 switch (in_payload.data["Action"])
                 {
+                    case "Player HUD Menu":
+                        hudDisplay.listen(in_payload);
+                        break;
                     case "Retrieve Upgrades":
                         foreach (KeyValuePair<string, string> it_upgrades in in_payload.data)
                         {
@@ -1391,8 +1421,6 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
 
         if (inventory.recieveItem(getItem.resourceName, 1))
         {
-            dataCount += 1;
-            //GameObject.Find("Canvas").transform.GetChild(3).gameObject.GetComponent<Text>().text = "Data: " + dataCount;
             canvas.toast.newNotification("You picked up 1 " + getItem.resourceName + " (Total: " + inventory.getInventory()[getItem.resourceName] + ")");
             //                Destroy(col.gameObject);
             return true;
@@ -1403,6 +1431,26 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
             return false;
         }
     }
+
+    public bool pickupItem(string in_item)
+    {
+
+        if (inventory.recieveItem(in_item, 1))
+        {
+            if (NetworkMain.Username.Equals(name))
+            canvas.toast.newNotification("You picked up 1 " + in_item + " (Total: " + inventory.getInventory()[in_item] + ")");            
+            return true;
+        }
+        else
+        {
+            if (NetworkMain.Username.Equals(name))
+            {
+                canvas.toast.newNotification("Inventory is full");
+            }
+            return false;
+        }
+    }
+
     void OnTriggerEnter(Collider col)
     {
         //if (col.TryGetComponent<TransferCenter>(out TransferCenter transferCentre))
@@ -1424,6 +1472,20 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
         {
             canAttack = false;
             transform.SetParent(spaceship.transform);
+            inShip = true;
+            if (hudDisplay != null)
+            {
+                hudDisplay.closeMenu();
+                Destroy(hudDisplay.gameObject);
+                livingBeing.handAnimator.SetBool("accessMenu", false);
+                canLook = true;
+                if (NetworkMain.Username.Equals(name))
+                {
+                    Cursor.lockState = CursorLockMode.Locked;
+                    crosshair.SetActive(true);
+                }
+
+            }
         }
 
         if (col.TryGetComponent<ConsolePod>(out ConsolePod pod))
@@ -1436,7 +1498,7 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
                         pod.updateMonitor($"Current Infection: {livingBeing.infectionRate}");
                         break;
                     case "Console":
-                        if (mainMenuGO == null)
+                        if (hudDisplay == null)
                             accessConsole();
                         break;
                     case "Enter Teleport":
@@ -1463,12 +1525,27 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
         Spaceship getShip = col.GetComponent<Spaceship>();
         if (getShip)
         {
+            inShip = false;
             canAttack = true;
             transform.SetParent(survivorsGO.survivorList.transform);
+            if (hudDisplay != null)
+            {
+                hudDisplay.closeMenu();
+                Destroy(hudDisplay.gameObject);
+                livingBeing.handAnimator.SetBool("accessMenu", false);
+                canLook = true;
+                if (NetworkMain.Username.Equals(name))
+                {
+                    Cursor.lockState = CursorLockMode.Locked;
+                    crosshair.SetActive(true);
+                }
+
+
+            }
         }
 
 
-        if (col.TryGetComponent<ConsolePod>(out ConsolePod pod))
+            if (col.TryGetComponent<ConsolePod>(out ConsolePod pod))
         {
             if (name.Equals(NetworkMain.Username))
             {
@@ -1552,11 +1629,16 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
         }
     }
 
+    public void listen(Payload in_payload)
+    {
+        hudDisplay.listen(in_payload);
+    }
+
     private void createText(string getString, Vector3 getPos)
     {
 
         GameObject tmpText = Instantiate(Resources.Load<GameObject>("Display/Text"), transform.position, Quaternion.identity);
-        tmpText.transform.SetParent(mainMenuGO.GetComponent<ConsoleUI>().OptionUI);
+        tmpText.transform.SetParent(hudDisplay.GetComponent<ConsoleUI>().OptionUI);
         tmpText.GetComponent<UIText>().textField.text = getString;
         tmpText.transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
         tmpText.transform.localScale = new Vector3(1f, 1f, 1f);
@@ -1566,7 +1648,7 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
     {
         int count;
         count = 0;
-        foreach (Transform child in mainMenuGO.GetComponent<ConsoleUI>().OptionUI)
+        foreach (Transform child in hudDisplay.GetComponent<ConsoleUI>().OptionUI)
         {
             Destroy(child.gameObject);
         }
@@ -1581,16 +1663,16 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
         switch (param)
         {
             case "Current":
-                selectMainConsole(livingBeing.currentWeapon.GetComponent<IEquipment>().getAllAddons(), new Vector3(-157f, -11f - (37f * count), 30f), mainMenuGO.GetComponent<ConsoleUI>().OptionUI, "Current");
+                selectMainConsole(livingBeing.currentWeapon.GetComponent<IEquipment>().getAllAddons(), new Vector3(-157f, -11f - (37f * count), 30f), hudDisplay.GetComponent<ConsoleUI>().OptionUI, "Current");
                 break;
             case "Off":
-                selectMainConsole(livingBeing.offWeapon.GetComponent<IEquipment>().getAllAddons(), new Vector3(-157f, -11f - (37f * count), 30f), mainMenuGO.GetComponent<ConsoleUI>().OptionUI, "Current");
+                selectMainConsole(livingBeing.offWeapon.GetComponent<IEquipment>().getAllAddons(), new Vector3(-157f, -11f - (37f * count), 30f), hudDisplay.GetComponent<ConsoleUI>().OptionUI, "Current");
 
                 break;
             case "Visor":
                 break;
             case "Armor":
-                selectMainConsole(armor.GetComponent<IEquipment>().getAllAddons(), new Vector3(-157f, -11f - (37f * count), 30f), mainMenuGO.GetComponent<ConsoleUI>().OptionUI, "Current");
+                selectMainConsole(armor.GetComponent<IEquipment>().getAllAddons(), new Vector3(-157f, -11f - (37f * count), 30f), hudDisplay.GetComponent<ConsoleUI>().OptionUI, "Current");
                 break;
             case "Feet":
                 break;
@@ -1610,9 +1692,9 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
         foreach (IAddon getTrans in getItem)
         {
             GameObject subMenu = Instantiate(Resources.Load<GameObject>("Display/Console Upgrade Option"), transform.position, Quaternion.identity);
-            subMenu.transform.SetParent(mainMenuGO.GetComponent<ConsoleUI>().OptionUI);
+            subMenu.transform.SetParent(hudDisplay.GetComponent<ConsoleUI>().OptionUI);
             Vector3 pos = new Vector3(-157f, -11f - (37f * counter), 30f);
-            subMenu.GetComponent<Console_Upgrade_Option>().setOption(getTrans, inventory, canvas.toast, this, optionType, mainMenuGO.GetComponent<ConsoleUI>().infoText, mainMenuGO.GetComponent<ConsoleUI>().upgradeText);
+            subMenu.GetComponent<Console_Upgrade_Option>().setOption(getTrans, inventory, canvas.toast, this, optionType, hudDisplay.GetComponent<ConsoleUI>().infoText, hudDisplay.GetComponent<ConsoleUI>().upgradeText);
             subMenu.transform.localPosition = pos;
             subMenu.transform.localScale = new Vector3(1f, 1f, 1f);
             subMenu.transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
@@ -1711,5 +1793,10 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
                 insanityLevel = insanityLevel + Time.deltaTime / 3 > 100 ? 100 : insanityLevel + Time.deltaTime / 3;
             }
         }
+    }
+
+    public Inventory getInventory()
+    {
+        return inventory;
     }
 }

@@ -71,6 +71,17 @@ public class Inventory : MonoBehaviour, IInventory, IEquipment
         else return false;
     }
 
+    public bool useItem(string in_item, int in_amount)
+    {
+        capacityAddon.inventory[in_item] -= in_amount;
+        if (capacityAddon.inventory[in_item] <= 0)
+        {
+            capacityAddon.inventory.Remove(in_item);
+            return true;
+        }
+        return false;
+    }
+
     public void getHoldAmt(string getName, int getAmt)
     {
         amountOnHold += getAmt;
