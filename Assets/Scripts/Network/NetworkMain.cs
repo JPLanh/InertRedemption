@@ -75,7 +75,7 @@ public class NetworkMain : MonoBehaviour
 
         socket.On("Broadcast", (getData) =>
         {
-//            Debug.Log($"Broadcast 1: {getData.ToString().Replace('`', '\"').Replace("\\", string.Empty).Replace("\"{", "{").Replace("}\"", "}")}");
+            Debug.Log($"Broadcast 1: {getData.ToString().Replace('`', '\"').Replace("\\", string.Empty).Replace("\"{", "{").Replace("}\"", "}")}");
             Payload lv_payload = JsonConvert.DeserializeObject<Payload>(getData.ToString()
                 .Replace('`', '\"')
                 .Replace("\\", string.Empty)

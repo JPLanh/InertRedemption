@@ -154,7 +154,7 @@ module.exports = async function(socket){
 				case "Init Server":
 					if (data["Leader"] == param["source"])
 					{
-						console.log("Leader reporting: " + data["Leader"]);
+//						console.log("Leader reporting: " + data["Leader"]);
 							for(let resourceID = 0; resourceID < 2; resourceID++){
 								let resourcePayloads = {};
 								resourcePayloads["Resource"] = (resourceID == 0) ? "Tree" : "Stone";
@@ -210,7 +210,7 @@ module.exports = async function(socket){
 						payloadData["Action"] = "Resource Loaded";
 						payloadData["Type"] = "Action";
 						payload_template["data"] = payloadData;
-						socket.in(data['lobbyID']).emit('Broadcast', JSON.stringify(payload_template).replace(/"/g, "`"));
+						getSocket.in(data['lobbyID']).emit('Broadcast', JSON.stringify(payload_template).replace(/"/g, "`"));
 						resolve(await upgrade.find({"user": data["Username"]}).exec());
 					})					
 					.then(async (allUpgrades) => {

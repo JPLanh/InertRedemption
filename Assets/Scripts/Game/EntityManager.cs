@@ -29,6 +29,7 @@ public class EntityManager : MonoBehaviour
     public static Dictionary<string, ResourceEntity> resourcesLoad = new Dictionary<string, ResourceEntity>();
     public static Dictionary<string, Resource> resources = new Dictionary<string, Resource>();
     public static Dictionary<string, Data> loot = new Dictionary<string, Data>();
+    public static Dictionary<string, InputField> inputFields = new Dictionary<string, InputField>();
 
     public static Text infectionMonitor;
 

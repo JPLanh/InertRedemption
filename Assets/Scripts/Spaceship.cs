@@ -9,11 +9,13 @@ public class Spaceship : MonoBehaviour
     public Dictionary<string, int> requirement = new Dictionary<string, int>();
     [SerializeField] Text resourceMonitorText;
 
+    public ButtonScript disinfectionButton;
+
     // Start is called before the first frame update
     void Start()
     {
-        resources.Add("Log", 0);
-        resources.Add("Stone", 0);
+        //resources.Add("Log", 0);
+        //resources.Add("Stone", 0);
         requirement.Add("Log", 2);
         requirement.Add("Stone", 1);
 

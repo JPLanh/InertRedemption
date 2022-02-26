@@ -59,13 +59,17 @@ public class Resource : MonoBehaviour, IDamagable
         //{
         if (durability > 0)
         {
-            Dictionary<string, string> payload = new Dictionary<string, string>();
-            payload["UID"] = UID;
-            payload["Type"] = "Action";
-            payload["Damage"] = StringUtils.convertFloatToString(getValue);
-            payload["Action"] = "Damage Resource";
-            NetworkMain.broadcastAction(payload);
+            if (NetworkMain.Username.Equals(attacker.name))
+            {
+                Dictionary<string, string> payload = new Dictionary<string, string>();
+                payload["UID"] = UID;
+                payload["Type"] = "Action";
+                payload["Damage"] = StringUtils.convertFloatToString(getValue);
+                payload["Action"] = "Damage Resource";
+                NetworkMain.broadcastAction(payload);
+            }
             return true;
+
         }
         return false;
     }

@@ -72,6 +72,7 @@ public class BasicMovement : MonoBehaviour
                 {
                     fpsCameraView();
                 }
+            }
 
                 if (lv_playerController.characterController.isGrounded && lv_playerController.canMove)
                 {
@@ -95,7 +96,6 @@ public class BasicMovement : MonoBehaviour
                 // Move the controller, use this to help calculate to fire ahead
                 lv_playerController.characterController.Move(moveDirection * Time.deltaTime);
 
-            }
         }
     }
 

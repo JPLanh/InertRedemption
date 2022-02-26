@@ -21,10 +21,9 @@ public class ToastNotifications : MonoBehaviour
 
     public void newNotification(string getMessage)
     {
-        GameObject newNotif = Instantiate(Resources.Load<GameObject>("Notifications"), transform.position, Quaternion.identity);
-        newNotif.transform.SetParent(this.transform);
-        newNotif.GetComponent<Notifications>().toastNotifications = this.gameObject;
-        newNotif.transform.localPosition = new Vector3(0f, 27.5f * (this.transform.childCount-1), 0f);
+        GameObject newNotif = Instantiate(Resources.Load<GameObject>("Notifications"), transform);
+        newNotif.GetComponent<Notifications>().toastNotifications = gameObject;
+        newNotif.transform.localPosition = new Vector3(0f, 27.5f * (transform.childCount-1), 0f);
         newNotif.GetComponent<Notifications>().updateMessage(getMessage);
         refreshNotifs();
     }

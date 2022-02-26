@@ -61,10 +61,16 @@ public class SendButton : MonoBehaviour
                     }
                     break;
                 case "ready":
-                    NetworkMain.broadcastAction("Ready");
+                    if (!NetworkMain.LobbyID.Equals("Lobby-Main"))
+                    {
+                        NetworkMain.broadcastAction("Ready");
+                    }
                     break;
                 case "swap":
-                    NetworkMain.broadcastAction("Swap Team");
+                    if (!NetworkMain.LobbyID.Equals("Lobby-Main"))
+                    {
+                        NetworkMain.broadcastAction("Swap Team");
+                    }
                     break;
                 case "leave":
                     payload["Action"] = "Leave Lobby";

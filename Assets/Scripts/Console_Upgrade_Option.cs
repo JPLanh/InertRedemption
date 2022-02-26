@@ -9,9 +9,9 @@ public class Console_Upgrade_Option : MonoBehaviour, ButtonListenerInterface
     public Text levelText;
     public GameObject requirements;
     [SerializeField]
-    private ConsoleButton upgradeButton;
+    private UIConsoleButton upgradeButton;
     [SerializeField]
-    private ConsoleButton infoButton;
+    private UIConsoleButton infoButton;
     private IAddon currentIAddon;
     private IInventory currentInventory;
     private ToastNotifications toast;
