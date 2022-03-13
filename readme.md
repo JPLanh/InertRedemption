@@ -1,6 +1,6 @@
 # Inert Redemption
 
-# Current Version: 0.0.19a
+# Current Version: 0.0.20a
 # Latst release version: N/A
 
 * Render Pipeline

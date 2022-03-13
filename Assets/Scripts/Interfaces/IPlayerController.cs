@@ -23,8 +23,8 @@ public interface IPlayerController
     public void buildModeSwitch();
     public float getHealth();
     public LivingBeing getLivingBeing();
-    public void saveUpgrades();
     public void listen(Payload in_payload);
     public Inventory getInventory();
     public bool pickupItem(string in_item);
+    public void death();
 }

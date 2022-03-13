@@ -1934,6 +1934,7 @@ MonoBehaviour:
   usernameField: {fileID: 1608354573}
   IpField: {fileID: 2114887689}
   toast: {fileID: 1710211739}
+  version: {fileID: 1354682143}
   menu: {fileID: 1367496779}
   lv_enjin: {fileID: 1716215016}
   displayList: {fileID: 2037811781}

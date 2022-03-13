@@ -4,7 +4,7 @@ using UnityEngine;
 using System;
 
 [Serializable]
-public class Resource : MonoBehaviour, IDamagable
+public class Resource : MonoBehaviour, IDamagable, Displayable
 {
     public string _id;
     public string __v;
@@ -19,10 +19,15 @@ public class Resource : MonoBehaviour, IDamagable
     public AudioSource damageSound;
     public AudioSource breakingSound;
     public string resource;
+    public float progressCounter = 0;
+    public bool resourceTrapped = false;
     public int amount;
     public string lobbyID;
     public string UID;
     public bool isDestroyed = false;
+    public GameObject resourceObj;
+    public GameObject trapObj;
+    public Collider resourceCollision;
     // Start is called before the first frame update
     void Start()
     {
@@ -74,12 +79,39 @@ public class Resource : MonoBehaviour, IDamagable
         return false;
     }
 
+    public bool trapping(float in_value)
+    {
+        float lv_progress = progressCounter - in_value * 5;
+        if (lv_progress >= 100)
+        {
+            if (!resourceTrapped)
+            {
+                harvest(in_value);
+                progressCounter = lv_progress;
+                resourceTrapped = true;
+                if (NetworkMain.Team.Equals("Virus"))
+                {
+                    trapObj.SetActive(true);
+                }
+                return true;
+            }
+        } else
+        {
+            harvest(in_value);
+            progressCounter = lv_progress;
+            return true;
+        }
+        return false;
+    }
+
     IEnumerator breakingResource()
     {
         isDestroyed = true;
         breakingSound.Play();
-        yield return new WaitForSeconds(4);
+        Destroy(resourceObj);
+        Destroy(resourceCollision);
         createLoot();
+        yield return new WaitForSeconds(4);
         Destroy(gameObject);
     }
 
@@ -87,19 +119,33 @@ public class Resource : MonoBehaviour, IDamagable
     {
         isDestroyed = true;
         breakingSound.Play();
+        Destroy(resourceObj);
+        Destroy(resourceCollision);
+        createLoot();
         yield return new WaitForSeconds(4);
         Destroy(gameObject);
     }
 
-    public void damage(float getValue)
+    public void damage(string in_user, float getValue)
     {
-
         durability += getValue;
         if (durability > 0)
         {
             damageSound.Play();
         } else
         {
+            EntityManager.survivors.TryGetValue(in_user, out PlayerController out_player);
+            if (out_player != null)
+            {
+                if (resourceTrapped)
+                {
+
+                    GameObject lv_new_affliction = Instantiate(Resources.Load<GameObject>("Afflictions/Fear"), out_player.affliction_lists.transform);
+                    lv_new_affliction.TryGetComponent<Affliction_Fear>(out Affliction_Fear out_affliction);
+                    out_affliction.lv_player = out_player;
+                    out_affliction.init(9, 5);
+                }
+            }
             StartCoroutine(breakingResource());
         }
     }
@@ -134,8 +180,20 @@ public class Resource : MonoBehaviour, IDamagable
                 break;
         }
         lv_data.UID = UID;
-        Destroy(this.gameObject);
         EntityManager.resources.Remove(UID);
         return GO;
+    }
+
+    public string display()
+    {
+        if (NetworkMain.Team.Equals("Survivor"))
+        {
+            return "This is just a resource";
+        } else
+        {
+            String displayOut = $"Durability: {durability}\n";
+            if (progressCounter > 0) displayOut += $"Trapping in Progress: {progressCounter}";
+            return displayOut;
+        }
     }
 }

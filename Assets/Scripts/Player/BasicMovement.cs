@@ -138,7 +138,8 @@ public class BasicMovement : MonoBehaviour
 
     public void PositionalUpdate()
     {
-        if (Time.time >= lastUpdate && (lastRot != rotation || lastPos != lead.transform.position))
+        //        if (Time.time >= lastUpdate && (lastRot != rotation || lastPos != lead.transform.position))
+        if (Time.time >= lastUpdate)// && (lastRot != rotation || lastPos != lead.transform.position))
         {
             lastPos = lead.transform.position;
             lastRot = rotation;

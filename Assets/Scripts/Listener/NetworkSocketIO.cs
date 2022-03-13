@@ -45,6 +45,7 @@ public class NetworkSocketIO : MonoBehaviour
             Dictionary<string, string> localPlayer = StringUtils.getPayload();
             localPlayer["lobbyID"] = NetworkMain.LobbyID;
             localPlayer["Username"] = NetworkMain.Username;
+            localPlayer["Team"] = NetworkMain.Team;
             localPlayer["Action"] = "Enter Game";
             NetworkMain.serverAction(localPlayer);
         }
@@ -55,7 +56,6 @@ public class NetworkSocketIO : MonoBehaviour
         Dictionary<string, string> payload = new Dictionary<string, string>();
         payload["Type"] = "Player Action";
         payload["Action"] = "Exit Game Session";
-        EntityManager.players[NetworkMain.UserID].saveUpgrades();
         NetworkMain.broadcastAction(payload);
         NetworkMain.disconnect();
     }
@@ -111,7 +111,7 @@ public class NetworkSocketIO : MonoBehaviour
                         case "Damage Resource":
                             if (EntityManager.resources.ContainsKey(getPayload.data["UID"]))
                             {
-                                EntityManager.resources[getPayload.data["UID"]].damage(float.Parse(getPayload.data["Damage"]));
+                                EntityManager.resources[getPayload.data["UID"]].damage(getPayload.source, float.Parse(getPayload.data["Damage"]));
                             }
                             break;
                         case "Join Acknowledge":

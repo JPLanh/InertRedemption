@@ -75,13 +75,15 @@ public class NetworkMain : MonoBehaviour
 
         socket.On("Broadcast", (getData) =>
         {
-            Debug.Log($"Broadcast 1: {getData.ToString().Replace('`', '\"').Replace("\\", string.Empty).Replace("\"{", "{").Replace("}\"", "}")}");
             Payload lv_payload = JsonConvert.DeserializeObject<Payload>(getData.ToString()
                 .Replace('`', '\"')
                 .Replace("\\", string.Empty)
                 .Replace("\"{", "{")
                 .Replace("}\"", "}")
                );
+
+//            if (!lv_payload.data["Type"].Equals("Player Update"))
+//                Debug.Log($"Broadcast 1: {getData.ToString().Replace('`', '\"').Replace("\\", string.Empty).Replace("\"{", "{").Replace("}\"", "}")}");
 
             switch (lv_payload.data["Type"])
             {
@@ -94,7 +96,9 @@ public class NetworkMain : MonoBehaviour
                     break;
                 case "Player Action":
                     if (payloadStack.ContainsKey(lv_payload.source))
+                    {
                         payloadStack[lv_payload.source].actionQueue.Push(lv_payload);
+                    }
                     break;
 
             }
