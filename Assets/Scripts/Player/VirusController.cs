@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerController
 {
@@ -20,6 +21,7 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
     public PlayerCanvas canvas;
     public Animator userProjectionAnimator;
     public GameObject displayInterface;
+    public subDisplayMenu displayInterfaceMenu;
     public EntityManager em;
 
     public TransferCenter visitingTransferCenter;
@@ -30,6 +32,7 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
     //private string lookState = "Normal";
 
     public string userID;
+    public string currentAbility;
 
     public GameObject harvester;
 
@@ -68,17 +71,29 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
     public int weaponState = 0;
     public PlayerController infectedPlayer;
     public Resource infectedResource;
-    public InfectionController lv_infectionController;
     public Light virusLight;
 
+    public float infectionPoint = 0;
+    public float devourPoint = 0;
+
     public AudioSource heartbeat_sound;
+    public AudioSource replenish_sound;
+    public AudioSource trapping_sound;
     public PlayerNetworkListener networkListener;
+    public GameObject hudObject;
+    private PlayerHubUI hudDisplay;
+    public VirusUpgrades upgrades;
+
+
     #endregion
 
     #region Inits
     void Start()
     {
         revealTarget = new List<GameObject>();
+        currentAbility = "Replenishment";
+        upgrades = new VirusUpgrades();
+        displayInterface.TryGetComponent<subDisplayMenu>(out displayInterfaceMenu);
     }
 
     public float getHealth()
@@ -117,7 +132,6 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
     public void setOtherPlayer(string getUserID, string getUsername)
     {
         if (canvas != null) canvas.playerCompass.player = null;
-        canvas = null;
         crosshair = null;
         playerCamera.gameObject.SetActive(false);
         GetComponent<CharacterController>().enabled = false;
@@ -133,23 +147,48 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
     {
         networkListener.networkActionListen();
         networkListener.networkPositionListen();
+        livingBeing.virusDecayTick();
         if (isAlive && inControl)
         {
-            uiUpdater();
-            if (inControl)
+            frontalView();
+            if (NetworkMain.Username == gameObject.name)
             {
-                if (NetworkMain.Username == gameObject.name)
-                {
-                    targetReveals();
-                    playerKeyboardActionMapper();
+                uiUpdater();
+                targetReveals();
+                playerKeyboardActionMapper();
 
-                    if (autorun)
-                    {
-                        if (Input.GetAxis("Vertical") != 0) autorun = false;
-                    }
+                if (autorun)
+                {
+                    if (Input.GetAxis("Vertical") != 0) autorun = false;
                 }
             }
+        }
+    }
 
+
+    public void frontalView()
+    {
+        if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out var hit, 20f, ~(1 << 7)))
+        {
+
+            Displayable selection = null;
+            selection = hit.transform.GetComponent<Displayable>();
+            if (selection != null)
+            {
+                if (displayInterface.activeInHierarchy == false)
+                {
+                    displayInterface.SetActive(true);
+                }
+                displayInterfaceMenu.textField.text = selection.display();
+            }
+            else
+            {
+                displayInterface.SetActive(false);
+            }
+        }
+        else
+        {
+            displayInterface.SetActive(false);
         }
     }
 
@@ -230,13 +269,28 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
         //        Debug.Log(in_payload.data["Action"]);
         switch (parsedAction[0])
         {
+            case "Upgrade":
+                performUpgrade(in_payload.data["Ability"]);
+                upgrades.addAbilityLevel(new KeyValuePair<string, string>(in_payload.data["Ability"], in_payload.data["Amount"]));
+                break;
+            case "Death":
+                death();
+                break;
             case "Eject":
                 Eject();
                 detachFromHost();
                 break;
             case "Infect":
-                negativeInfect(in_payload.target, float.Parse(in_payload.data["Amount"]));
-                break;
+                switch (in_payload.data["Ability"])
+                {
+                    case "Replenishment":
+                        negativeInfect(in_payload.target, float.Parse(in_payload.data["Amount"]));
+                        break;
+                    case "Consume Host":
+                        consumeHost(in_payload.target);
+                        break;
+        }
+        break;
             case "Update":
                 serverControl(in_payload.data);
                 break;
@@ -250,6 +304,22 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
             default:
                 switch (in_payload.data["Action"])
                 {
+                    case "Modify Health":
+                        modifyHealth(float.Parse(in_payload.data["Amount"]));
+//                        damage(float.Parse(in_payload.data["Amount"]));
+                        break;
+                    case "Retrieve Upgrades":
+                        foreach (KeyValuePair<string, string> it_upgrades in in_payload.data)
+                        {
+                            if (!it_upgrades.Key.Equals("Action") && !it_upgrades.Key.Equals("Type"))
+                            {
+                                upgrades.addAbilityLevel(it_upgrades);
+                            }
+                        }
+                        break;
+                    case "Player HUD Menu":
+                        hudDisplay.listen(in_payload);
+                        break;
                     case "Exhaust Resource":
                     case "Harvest Resource":
                         harvestResource(in_payload.source, in_payload.target, in_payload.data);
@@ -283,7 +353,34 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
             NetworkMain.broadcastAction(payload);
         }
 
-        if (Input.GetButtonDown("Auto Run"))
+        if (infectedPlayer == null)
+        {
+            if (Input.GetButtonDown("Menu"))
+            {
+                getCmd = "Menu";
+            }
+        }
+
+        if (Input.GetButtonDown("Interact"))
+        {
+            getCmd = "Interact";
+        }
+
+        if (Input.GetButton("Interact"))
+        {
+            getCmd = "Interact";
+        }
+
+        if (Input.GetButtonUp("Interact"))
+        {
+            getCmd = "InteractUp";
+        }
+        if (canAttack)
+        {
+
+
+
+            if (Input.GetButtonDown("Auto Run"))
             {
                 toggleAutoRun();
             }
@@ -316,45 +413,15 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
                 getCmd = "Fire2Up";
             }
 
+        }
 
-            if (Input.GetButtonDown("Interact"))
+            if (getCmd != null)
             {
-                getCmd = "Interact";
-            }
-
-            if (Input.GetButton("Interact"))
-            {
-                getCmd = "Interact";
-            }
-
-            if (Input.GetButtonUp("Interact"))
-            {
-                getCmd = "InteractUp";
-            }
-
-
-
-        if (getCmd != null)
-        {
-            Dictionary<string, string> payload = new Dictionary<string, string>();
-            payload["Type"] = "Player Action";
-            payload["Action"] = getCmd;
-            if (getCmd.Contains("Up"))
-            {
-                if (!NetworkMain.local)
+                Dictionary<string, string> payload = new Dictionary<string, string>();
+                payload["Type"] = "Player Action";
+                payload["Action"] = getCmd;
+                if (getCmd.Contains("Up"))
                 {
-                    NetworkMain.broadcastAction(payload);
-                }
-                else
-                {
-                    actionDecider(getCmd);
-                }
-            }
-            else
-            {
-                if (Time.time > spamTimer + .15f)
-                {
-                    spamTimer = Time.time + .15f;
                     if (!NetworkMain.local)
                     {
                         NetworkMain.broadcastAction(payload);
@@ -364,15 +431,31 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
                         actionDecider(getCmd);
                     }
                 }
+                else
+                {
+                    if (Time.time > spamTimer + .15f)
+                    {
+                        spamTimer = Time.time + .15f;
+                        if (!NetworkMain.local)
+                        {
+                            NetworkMain.broadcastAction(payload);
+                        }
+                        else
+                        {
+                            actionDecider(getCmd);
+                        }
+                    }
+                }
             }
-        }
     }
 
     public void actionDecider(string getAction)
     {
         switch (getAction)
         {
-
+            case "Menu":
+                accessMenu();
+                break;
             case "Fire1":
                 fireOne();
                 break;
@@ -387,6 +470,41 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
     }
 
     #region actions
+
+    public void accessMenu()
+    {
+        if (hudDisplay == null)
+        {
+            Instantiate(Resources.Load<GameObject>("UI/Player UI Hub"), hudObject.transform).TryGetComponent<PlayerHubUI>(out hudDisplay);
+            hudDisplay.TryGetComponent<PlayerHubUI>(out PlayerHubUI out_hub);
+            out_hub.init(this);
+            canLook = false;
+            canAttack = false;
+            if (NetworkMain.Username.Equals(name))
+            {
+                Cursor.lockState = CursorLockMode.None;
+                crosshair.SetActive(false);
+            }
+        }
+        else
+        {
+            hudDisplay.closeMenu();
+            Destroy(hudDisplay.gameObject);
+            canLook = true;
+            canAttack = true;
+            if (NetworkMain.Username.Equals(name))
+            {
+                Cursor.lockState = CursorLockMode.Locked;
+                crosshair.SetActive(true);
+            }
+        }
+    }
+
+    public void selectAbility(string in_ability)
+    {
+        currentAbility = in_ability;
+        Debug.Log("Swap abilities");
+    }
 
     public void running(bool isRunning)
     {
@@ -410,13 +528,17 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
     {
         if (infectedPlayer != null)
         {
-            Dictionary<string, string> payload = new Dictionary<string, string>();
-            payload["Type"] = "Player Action";
-            payload["Action"] = "Eject";
-            NetworkMain.broadcastAction(payload);
+            ejectHost();
         }
     }
 
+    public void ejectHost()
+    {
+        Dictionary<string, string> payload = new Dictionary<string, string>();
+        payload["Type"] = "Player Action";
+        payload["Action"] = "Eject";
+        NetworkMain.broadcastAction(payload);
+    }
     #endregion
 
     #region Multiplayer Configuration
@@ -552,6 +674,7 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
         //in_player.playerCamera.enabled = true;
         Cursor.lockState = CursorLockMode.Locked;
         canMove = false;
+        canAttack = true;
     }
 
     public void attachToHost(PlayerController in_player)
@@ -559,6 +682,12 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
         infectedPlayer = in_player;
         transform.SetParent(in_player.transform);
         transform.localPosition = new Vector3(0f, 0f, 0f);
+        if (hudDisplay != null)
+        {
+            hudDisplay.closeMenu();
+            Destroy(hudDisplay.gameObject);
+        }
+
     }
 
     public void attachToHost(Resource in_resource)
@@ -571,15 +700,19 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
 
     public void Eject()
     {
-
-        canvas.playerCompass.player = transform;
         infectedPlayer.ifs.currentVirus = null;
         infectedPlayer.playerCamera.gameObject.SetActive(false);
-        playerCamera.gameObject.SetActive(true);
         enabled = true;
-        Cursor.lockState = CursorLockMode.Locked;
+        if (NetworkMain.Username.Equals(name))
+        {
+            canvas.playerCompass.player = transform;
+            Cursor.lockState = CursorLockMode.Locked;
+            playerCamera.gameObject.SetActive(true);
+        }
         inControl = true;
         canMove = true;
+        canAttack = true;
+        canLook = true;
     }
 
     public void detachFromHost()
@@ -588,6 +721,31 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
         transform.SetParent(virusList);
         transform.localPosition = new Vector3(Random.Range(-475, 475), 3f, Random.Range(-475, 475));
     }
+
+    private void consumeHost(string in_player)
+    {
+        IPlayerController currentPlayer = EntityManager.players[in_player];
+        if (currentPlayer != null)
+        {
+            LivingBeing getBeing = currentPlayer.getLivingBeing();
+            if (getBeing != null)
+            {
+                if (getBeing.infectionRate >= 100)
+                {
+                    currentPlayer.death();
+                }
+            }
+            else
+            {
+                Debug.Log("Living being doesn't exists");
+            }
+        }
+        else
+        {
+            Debug.Log("PlayerControlelr doesn't exists");
+        }
+    }
+
     private void negativeInfect(string in_player, float in_infect)
     {
         IPlayerController currentPlayer = EntityManager.players[in_player];
@@ -597,6 +755,11 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
             if (getBeing != null)
             {
                 getBeing.infectionRate += in_infect;
+                infectionPoint += in_infect / 5f;
+                //if (getBeing.infectionRate >= 100)
+                //{
+                //    currentPlayer.death();
+                //}
             }
             else
             {
@@ -607,16 +770,54 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
             Debug.Log("PlayerControlelr doesn't exists");
         }
     }
+    public void modifyHealth(float in_amount)
+    {
+        float lv_health = livingBeing.health - in_amount;
+  //      Debug.Log(livingBeing.health + " , " + " - " + in_amount + " = " + lv_health);
+        livingBeing.health = lv_health > 100 ? 100 : lv_health;
+//        Debug.Log(livingBeing.health);
+        livingBeing.damageCheck();
+    }
+
+    private void damage(float in_amount)
+    {
+        Dictionary<string, string> payload = new Dictionary<string, string>();
+        payload["Type"] = "Player Action";
+        payload["Action"] = "Modify Health";
+        payload["Amount"] = in_amount.ToString();
+        NetworkMain.broadcastAction(payload);
+    }
 
     private void harvestResource(string in_harvester_UID, string in_resource_UID, Dictionary<string, string> in_payload){
         EntityManager.resources.TryGetValue(in_resource_UID, out Resource out_resource);
-        out_resource.harvest(float.Parse(in_payload["Amount"]));
-        livingBeing.health =  livingBeing.health - float.Parse(in_payload["Amount"]) > 100 ? 100 : livingBeing.health - float.Parse(in_payload["Amount"]);
+        switch (in_payload["Ability"])
+        {
+            case "Replenishment":
+                out_resource.harvest(float.Parse(in_payload["Amount"]));
+                damage((5 * float.Parse(in_payload["Amount"])));
+                if (!replenish_sound.isPlaying)
+                {
+                    replenish_sound.Play();
+                }
+                break;
+            case "Resource Trap":
+                if (out_resource.trapping(float.Parse(in_payload["Amount"])))
+                {
+                    damage(-float.Parse(in_payload["Amount"]));
+//                    livingBeing.health += ;
+                    if (!trapping_sound.isPlaying)
+                    {
+                        trapping_sound.Play();
+                    }
+                }
+                break;
+        }
     }
 
     public void death()
     {
         isAlive = false;
+        canvas.toast.newNotification($"{name} has died.");
         Destroy(gameObject);
     }
     public GameObject getGameObject()
@@ -641,34 +842,40 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
 
     public void fireOne()
     {
-        Dictionary<string, string> payload = new Dictionary<string, string>();
+        if (hudDisplay == null)
+        {
+            Dictionary<string, string> payload = new Dictionary<string, string>();
 
-        Physics.Raycast(new Ray(playerCamera.transform.position, playerCamera.transform.forward), out RaycastHit lv_hit, 3f);
-        if (lv_hit.transform != null)
-        {
-            lv_hit.transform.TryGetComponent<Resource>(out Resource out_resource);
-            if (out_resource != null && !out_resource.isDestroyed)
+            Physics.Raycast(new Ray(playerCamera.transform.position, playerCamera.transform.forward), out RaycastHit lv_hit, 3f);
+            if (lv_hit.transform != null)
             {
-                float lv_infect_amt = -(livingBeing.infectionRate * Time.deltaTime)*3;
-                payload.Add("Type", "Player Action");
-                payload.Add("Amount", lv_infect_amt.ToString());
-                if (out_resource.durability - lv_infect_amt > 0)
+                lv_hit.transform.TryGetComponent<Resource>(out Resource out_resource);
+                if (out_resource != null && !out_resource.isDestroyed)
                 {
-                    payload.Add("Action", "Harvest Resource");
+                    float lv_infect_amt = -(livingBeing.infectionRate * Time.deltaTime) * 3;
+                    payload.Add("Type", "Player Action");
+                    payload.Add("Amount", lv_infect_amt.ToString());
+                    if (out_resource.durability - lv_infect_amt > 0)
+                    {
+                        payload.Add("Action", "Harvest Resource");
+                        payload.Add("Ability", currentAbility);
+                    }
+                    else
+                    {
+                        payload.Add("Action", "Exhaust Resource");
+                    }
+                    NetworkMain.broadcastAction(payload, out_resource.UID);
                 }
-                else
-                {
-                    payload.Add("Action", "Exhaust Resource");
-                }
-                NetworkMain.broadcastAction(payload, out_resource.UID);
             }
-        }
-        if (infectedPlayer != null)
-        {
-            payload.Add("Action", "Infect");
-            payload.Add("Type", "Player Action");
-            payload.Add("Amount", (livingBeing.infectionRate * Time.deltaTime).ToString());
-            NetworkMain.broadcastAction(payload, infectedPlayer.userID);
+            if (infectedPlayer != null)
+            {
+                payload.Add("Action", "Infect");
+                payload.Add("Ability", currentAbility);
+                payload.Add("Type", "Player Action");
+                payload.Add("Amount", (livingBeing.infectionRate * Time.deltaTime).ToString());
+                NetworkMain.broadcastAction(payload, infectedPlayer.userID);
+            }
+
         }
     }
 
@@ -731,5 +938,145 @@ public class VirusController : MonoBehaviour, ButtonListenerInterface, IPlayerCo
     public bool pickupItem(string in_item)
     {
         return false;
+    }
+
+    public bool upgradeAbility(string in_upgrade, int in_level)
+    {
+        if (checkUpgrade(in_upgrade))
+        {
+            Dictionary<string, string> payload = new Dictionary<string, string>();
+            payload["Type"] = "Player Action";
+            payload["Action"] = "Upgrade";
+            payload["Team"] = NetworkMain.Team;
+            switch (in_upgrade)
+            {
+                case "Replenishment":
+                    payload["Level"] = StringUtils.convertIntToString(upgrades.replenishment_level+in_level);
+                    break;
+                case "Resource Trap":
+                    payload["Level"] = StringUtils.convertIntToString(upgrades.trapping_level+in_level);
+                    break;
+                case "Consume Host":
+                    payload["Level"] = StringUtils.convertIntToString(upgrades.consumeHost_level+in_level);
+                    break;
+            }
+            payload["Ability"] = in_upgrade;
+            payload["Amount"] = in_level.ToString();
+            payload["Username"] = NetworkMain.Username;
+            NetworkMain.serverAction(payload);
+            NetworkMain.broadcastAction(payload);
+            canvas.toast.newNotification($"{in_upgrade} has been upgraded");
+            return true;
+        } else
+        {
+            return false;
+        }
+    }
+
+    public bool checkUpgrade(string in_upgrade)
+    {
+        bool isUpgradable = false;
+        foreach(KeyValuePair<string, int> it_upgrades in upgrades.getRequirement(in_upgrade))
+        {
+            if (infectionPoint >= it_upgrades.Value)
+            {
+                isUpgradable = true;
+            } else
+            {
+                isUpgradable = false;
+                break;
+            }
+        }
+        return isUpgradable;
+    }
+    public bool performUpgrade(string in_upgrade)
+    {
+        bool isUpgradable = true;
+        foreach (KeyValuePair<string, int> it_upgrades in upgrades.getRequirement(in_upgrade))
+        {
+            Debug.Log($"{infectionPoint} {it_upgrades.Value}");
+            infectionPoint -= it_upgrades.Value;
+        }
+        return isUpgradable;
+    }
+}
+
+
+public class VirusUpgrades
+{
+    public float replenishment_percent;
+    public int replenishment_level;
+
+    public float trapping_percent;
+    public int trapping_level;
+
+    public float consumeHost_percent;
+    public int consumeHost_level;
+
+    public VirusUpgrades()
+    {
+        replenishment_level = 1;
+        replenishment_percent = 0;
+
+        trapping_level = 1;
+        trapping_percent = 0;
+
+        consumeHost_level = 1;
+        consumeHost_percent = 0;
+
+    }
+
+
+    public void addAbilityLevel(KeyValuePair<string, string> in_upgrade)
+    {
+        switch (in_upgrade.Key)
+        {
+            case "Replenishment":
+                replenishment_level += int.Parse(in_upgrade.Value);
+                break;
+            case "Resource Trap":
+                trapping_level += int.Parse(in_upgrade.Value);
+                break;
+            case "Consume Host":
+                consumeHost_level += int.Parse(in_upgrade.Value);
+                break;
+        }
+    }
+
+    public void setAbilityLevel(KeyValuePair<string, string> in_upgrade)
+    {
+        switch (in_upgrade.Key)
+        {
+            case "Replenishment":
+                replenishment_level = int.Parse(in_upgrade.Value);
+                break;
+            case "Resource Trap":
+                trapping_level = int.Parse(in_upgrade.Value);
+                break;
+            case "Consume Host":
+                consumeHost_level = int.Parse(in_upgrade.Value);
+                break;
+        }
+    }
+
+
+    public Dictionary<string, int> getRequirement(string in_ability){
+
+        Dictionary<string, int> lv_requirement = new Dictionary<string, int>();
+
+        switch (in_ability)
+        {
+            case "Replenishment":
+                lv_requirement.Add("Infection Point", 2 * replenishment_level);
+                break;
+            case "Resource Trap":
+                lv_requirement.Add("Infection Point", 2 * trapping_level);
+                break;
+            case "Consume Host":
+                lv_requirement.Add("Infection Point", 2 * consumeHost_level);
+                break;
+        }
+
+        return lv_requirement;
     }
 }

@@ -254,7 +254,6 @@ public class EntityManager : MonoBehaviour
                 newPlayer.transform.SetParent(virusList);
                 newPlayer.transform.localPosition = new Vector3(Random.Range(-475, 475), 3f, Random.Range(-475, 475));
                 newPlayer.TryGetComponent<VirusController>(out out_virusController);
-                out_virusController.lv_infectionController.virusList = virusList;
                 break;
             case "Survivor":
                 newPlayer = Instantiate(Resources.Load<GameObject>("Player"), transform.position, Quaternion.identity);

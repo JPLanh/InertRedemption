@@ -6,6 +6,7 @@ using UnityEngine.UI;
 public class PlayerHubUI : MonoBehaviour
 {
     public PlayerController lv_playerController;
+    public VirusController lv_virusController;
     private string state;
 
     // Start is called before the first frame update
@@ -29,11 +30,45 @@ public class PlayerHubUI : MonoBehaviour
         }
     }
 
+
+    public void init(PlayerController in_player)
+    {
+        lv_playerController = in_player;
+        initMenu("Survivor");
+    }
+
+    public void init(VirusController in_player)
+    {
+        lv_virusController = in_player;
+        initMenu("Virus");
+    }
+
     public void listen(Payload in_payload)
     {
         string[] parsedAction = in_payload.data["Menu"].Split(' ');
         switch (parsedAction[0])
         {
+            case "Ability":
+                switch (parsedAction[1])
+                {
+                    case "Virus":
+                        lv_virusController.selectAbility(in_payload.data["Menu"].Replace($"{parsedAction[0]} {parsedAction[1]} ", ""));
+                        break;
+                    case "Survivor":
+//                        lv_virusController.selectAbility(in_payload.data["Menu"].Replace($"{parsedAction[0]} {parsedAction[1] }", ""));
+                        break;
+                }
+                break;
+            case "Upgrade":
+                switch (parsedAction[1])
+                {
+                    case "Virus":
+                        if(NetworkMain.Username.Equals(lv_virusController.name))
+                            lv_virusController.upgradeAbility(in_payload.data["Menu"].Replace($"{parsedAction[0]} {parsedAction[1]} {parsedAction[2]} ", ""), int.Parse(parsedAction[2]));
+                        hud_VirusMutation();
+                        break;
+                }
+                break;
             case "Transfer":
                 string lv_transfer_item = in_payload.data["Menu"].Replace(parsedAction[0] + " ", "").Replace(parsedAction[1] + " ", "").Replace(parsedAction[2] + " ", "")
                     .Replace(parsedAction[3] + " ", "").Replace(parsedAction[4] + " ", "");
@@ -73,11 +108,71 @@ public class PlayerHubUI : MonoBehaviour
                         //                hudDisplay.initPlayerGears();
                         break;
                     case "Main Menu":
-                        initMenu();
+                        initMenu(in_payload.data["Team"]);
+                        break;
+                    case "Virus Abilities":
+                        hud_VirusAbilities();
+                        break;
+                    case "Virus Mutation":
+                        hud_VirusMutation();
+//                        Debug.Log("Mutation");
+//                        subDisplayMenu tets = Instantiate(Resources.Load<subDisplayMenu>("UI/Display Info"), transform);
+                        //
                         break;
                 }
                 break;
         }
+    }
+
+    private void hud_VirusAbilities()
+    {
+        closeMenu();
+        loadVerticalPanel(out GameObject out_panel, out RectTransform out_rect, 0, AnchorPresets.StretchAll, PivotPresets.MiddleCenter);
+        createText("", out_rect, new Vector3(0f, -375f, 0f), out UIText hint_text);
+        hint_text.textField.GetComponent<RectTransform>().sizeDelta = new Vector2(500, 60);
+        createNewUpgradeButton("Replenishment", "Ability Virus Replenishment", new Vector3(-500f, 300f, 0f), out_panel.transform, out HUDButton out_test_1);
+        out_test_1.hintText = hint_text.textField;
+        out_test_1.hint = $"Replenishment (Level: {lv_virusController.upgrades.replenishment_level})";
+
+        createNewUpgradeButton("Resource Trap", "Ability Virus Resource Trap", new Vector3(-350f, 300f, 0f), out_panel.transform, out HUDButton out_test_2);
+        out_test_2.hintText = hint_text.textField;
+        out_test_2.hint = $"Resource Trap (Level: {lv_virusController.upgrades.trapping_level})";
+
+        createNewUpgradeButton("Consume Host", "Ability Virus Consume Host", new Vector3(-200f, 300f, 0f), out_panel.transform, out HUDButton out_test_3);
+        out_test_3.hintText = hint_text.textField;
+        out_test_3.hint = $"Consume Host (Level: {lv_virusController.upgrades.consumeHost_level})";
+    }
+
+    private void hud_VirusMutation()
+    {
+        closeMenu();
+        loadVerticalPanel(out GameObject out_panel, out RectTransform out_rect, 0, AnchorPresets.StretchAll, PivotPresets.MiddleCenter);
+        createText("", out_rect, new Vector3(0f, -375f, 0f), out UIText hint_text);
+        hint_text.textField.GetComponent<RectTransform>().sizeDelta = new Vector2(500, 60);
+        createNewUpgradeButton("Replenishment", "Upgrade Virus 1 Replenishment", new Vector3(0f, 0f, 0f), out_panel.transform, out HUDButton out_test_1);
+        out_test_1.hintText = hint_text.textField;
+        out_test_1.hint = $"Replenishment (Level: {lv_virusController.upgrades.replenishment_level})" + "\n\nRequirements:\n";
+        foreach(KeyValuePair<string, int> it_upgrades in lv_virusController.upgrades.getRequirement("Replenishment"))
+        {
+            out_test_1.hint += $"{it_upgrades.Key}: {lv_virusController.infectionPoint} / {it_upgrades.Value}" + "\n";
+        }
+
+        createNewUpgradeButton("Resource Trap", "Upgrade Virus 1 Resource Trap", new Vector3(0f, 150f, 0f), out_panel.transform, out HUDButton out_test_2);
+        out_test_2.hintText = hint_text.textField;
+        out_test_2.hint = $"Resource Trap (Level: {lv_virusController.upgrades.trapping_level})" + "\n\nRequirements:\n";
+        foreach (KeyValuePair<string, int> it_upgrades in lv_virusController.upgrades.getRequirement("Resource Trap"))
+        {
+            out_test_2.hint += $"{it_upgrades.Key}: {lv_virusController.infectionPoint} / {it_upgrades.Value}" + "\n";
+        }
+
+        createNewUpgradeButton("Consume Host", "Upgrade Virus 1 Consume Host", new Vector3(0f, 300f, 0f), out_panel.transform, out HUDButton out_test_3);
+        out_test_3.hintText = hint_text.textField;
+        out_test_3.hint = $"Consume Host (Level: {lv_virusController.upgrades.consumeHost_level})" + "\n\nRequirements:\n";
+        foreach (KeyValuePair<string, int> it_upgrades in lv_virusController.upgrades.getRequirement("Consume Host"))
+        {
+            out_test_3.hint += $"{it_upgrades.Key}: {lv_virusController.infectionPoint} / {it_upgrades.Value}" + "\n";
+        }
+
     }
 
     private void transfer(string in_from_uid, string in_to_uid, string in_item)
@@ -131,18 +226,13 @@ public class PlayerHubUI : MonoBehaviour
         }
     }
 
-    public void init(PlayerController in_player)
-    {
-        lv_playerController = in_player;
-        initMenu();
-    }
 
     public void transferItem(string in_from_UID, string in_to_UID, string in_item)
     {
         closeMenu();
 
-        loadVerticalPanel(out GameObject left_panel, -400, AnchorPresets.VertStretchLeft, PivotPresets.MiddleLeft);
-        loadVerticalPanel(out GameObject right_panel, 400, AnchorPresets.VertStretchRight, PivotPresets.MiddleRight);
+        loadVerticalPanel(out GameObject left_panel, out RectTransform out_left_rect, -400, AnchorPresets.VertStretchLeft, PivotPresets.MiddleLeft);
+        loadVerticalPanel(out GameObject right_panel, out RectTransform out_right_panel, 400, AnchorPresets.VertStretchRight, PivotPresets.MiddleRight);
 
         EntityManager.players.TryGetValue(in_from_UID, out IPlayerController out_from);
         EntityManager.players.TryGetValue(in_to_UID, out IPlayerController out_to);
@@ -197,30 +287,42 @@ public class PlayerHubUI : MonoBehaviour
         }
         state = "";
     }
-    private void initMenu()
+    private void initMenu(string in_team)
     {
         closeMenu();
-        loadVerticalPanel(out GameObject left_panel, -400, AnchorPresets.VertStretchLeft, PivotPresets.MiddleLeft);
+        loadVerticalPanel(out GameObject left_panel, out RectTransform out_rect_panel, -400, AnchorPresets.VertStretchLeft, PivotPresets.MiddleLeft);
+        switch (in_team)
+        {
+            case "Survivor":
+                initMenu_Survivors(left_panel.transform);
+                break;
+            case "Virus":
+                initMenu_Virus(left_panel.transform);
+                break;
+        }
 
-        addMainMenuButton($"Status", $"Player Status", left_panel.transform);
-        addMainMenuButton($"Gear", $"Player Gears", left_panel.transform);
-        addMainMenuButton($"Ship Status", $"Ship Status", left_panel.transform);
-        if (lv_playerController.inShip) addMainMenuButton($"Ship Donation", $"Ship Donation", left_panel.transform);
-        //createNewButton($"Status", $"Player Status", new Vector3(200, 245f - (0 * 60), 0f), left_panel.transform);
-        //createNewButton($"Gear", $"Player Gears", new Vector3(200, 245f - (1 * 60), 0f), left_panel.transform);
-        //createNewButton($"Ship Status", $"Ship Status", new Vector3(200, 245f - (2 * 60), 0f), left_panel.transform);
-        //createNewButton($"Ship Donation", $"Ship Donation", new Vector3(200, 245f - (3 * 60), 0f), left_panel.transform);
     }
-    private void addMainMenuButton(string in_text, string in_action, Transform in_parent)
+
+    private void initMenu_Survivors(Transform in_panel)
     {
-        createNewButton(in_text, in_action, new Vector3(200, 245f - (in_parent.childCount * 60), 0f), in_parent);
+        addMainMenuButton($"Status", $"Player Status", in_panel);
+        addMainMenuButton($"Gear", $"Player Gears", in_panel);
+        addMainMenuButton($"Ship Status", $"Ship Status", in_panel);
+        if (lv_playerController.inShip) addMainMenuButton($"Ship Donation", $"Ship Donation", in_panel);
+    }
+
+    private void initMenu_Virus(Transform in_panel)
+    {
+        addMainMenuButton($"Status", $"Virus Status", in_panel);
+        addMainMenuButton($"Mutations", $"Virus Mutation", in_panel);
+        addMainMenuButton($"Abilities", $"Virus Abilities", in_panel);
     }
 
     public void initShipDonation()
     {
         closeMenu();
-        loadVerticalPanel(out GameObject left_panel, -400, AnchorPresets.VertStretchLeft, PivotPresets.MiddleLeft);
-        loadVerticalPanel(out GameObject right_panel, 400, AnchorPresets.VertStretchRight, PivotPresets.MiddleRight);
+        loadVerticalPanel(out GameObject left_panel, out RectTransform out_left_rect, -400, AnchorPresets.VertStretchLeft, PivotPresets.MiddleLeft);
+        loadVerticalPanel(out GameObject right_panel, out RectTransform out_right_rect, 400, AnchorPresets.VertStretchRight, PivotPresets.MiddleRight);
 
         createText("Item", left_panel.transform, new Vector3(150f, 280f, 0f));
         createText("Amount", left_panel.transform, new Vector3(350f, 280f, 0f));
@@ -245,12 +347,19 @@ public class PlayerHubUI : MonoBehaviour
         createNewButton("Back", "Main Menu", new Vector3(0f, -325f, 0f), transform);
     }
 
-    private void loadVerticalPanel(out GameObject out_verticalPanel, int in_xOffset, AnchorPresets in_present, PivotPresets in_pivot)
+    private void addMainMenuButton(string in_text, string in_action, Transform in_parent)
+    {
+        createNewButton(in_text, in_action, new Vector3(200, 245f - (in_parent.childCount * 60), 0f), in_parent);
+    }
+
+    private void loadVerticalPanel(out GameObject out_verticalPanel, out RectTransform out_rectTransform, int in_xOffset, AnchorPresets in_present, PivotPresets in_pivot)
     {
         out_verticalPanel = Instantiate(Resources.Load<GameObject>("UI/Vertical Panel"), transform);
-        out_verticalPanel.TryGetComponent<RectTransform>(out RectTransform out_rect);
-        RectTransformUtils.SetAnchor(out_rect, in_present, in_xOffset);
-        RectTransformUtils.SetPivot(out_rect, in_pivot);     
+        out_verticalPanel.TryGetComponent<RectTransform>(out out_rectTransform);
+        out_rectTransform.offsetMin = new Vector2(out_rectTransform.offsetMin.x, 0);
+        out_rectTransform.offsetMax = new Vector2(out_rectTransform.offsetMax.x, 0);
+        RectTransformUtils.SetAnchor(out_rectTransform, in_present, in_xOffset);
+        RectTransformUtils.SetPivot(out_rectTransform, in_pivot);     
     }
 
 
@@ -260,6 +369,16 @@ public class PlayerHubUI : MonoBehaviour
         newMenu.TryGetComponent<HUDButton>(out HUDButton out_buttonScript);
         out_buttonScript.buttonText.text = text;
         out_buttonScript.action = getAction;
+        newMenu.transform.localPosition = position;
+        newMenu.name = text;
+    }
+
+    private void createNewUpgradeButton(string text, string getAction, Vector3 position, Transform in_parent, out HUDButton out_button)
+    {
+        GameObject newMenu = Instantiate(Resources.Load<GameObject>("UI/Upgrade_Button"), in_parent);
+        newMenu.TryGetComponent<HUDButton>(out out_button);
+        //        out_buttonScript.buttonText.text = text;
+        out_button.action = getAction;
         newMenu.transform.localPosition = position;
         newMenu.name = text;
     }
@@ -277,6 +396,7 @@ public class PlayerHubUI : MonoBehaviour
     {
         GameObject tmpText = Instantiate(Resources.Load<GameObject>("UI/Text"), in_transform);
         tmpText.TryGetComponent<UIText>(out out_text);
+        out_text.textField.fontSize = 30;
         out_text.textField.text = getString;
         tmpText.transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
         tmpText.transform.localScale = new Vector3(1f, 1f, 1f);

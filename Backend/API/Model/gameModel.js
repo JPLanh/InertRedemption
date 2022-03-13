@@ -75,7 +75,8 @@ var upgrades = new Schema({
 	name: {type: String},
 	type: {type: String},
 	user: {type: String},
-	level: {type: Number}
+	level: {type: Number},
+	team: {type: String}
 })
 
 module.exports = mongoose.model("Item", item);

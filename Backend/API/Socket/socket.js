@@ -186,9 +186,9 @@ module.exports = async function(socket){
 							findUpgrade["level"] += 1;
 							return await findUpgrade.save();
 						} else {
-							return await new upgrade({"name": data["Gear"], "type": data["Type"], "user": data["Username"], "level": data["Level"]}).save();
+							return await new upgrade({"name": data["Gear"], "type": data["Type"], "user": data["Username"], "level": data["Level"], "team": data["Team"]}).save();
 						}
-
+//					socket.in(param['lobbyID']).emit('Broadcast', payload.replace(/"/g, "`"));
 					})
 					break;
 				case "Get Lobby List":
@@ -210,12 +210,19 @@ module.exports = async function(socket){
 						payloadData["Action"] = "Resource Loaded";
 						payloadData["Type"] = "Action";
 						payload_template["data"] = payloadData;
-						getSocket.in(data['lobbyID']).emit('Broadcast', JSON.stringify(payload_template).replace(/"/g, "`"));
-						resolve(await upgrade.find({"user": data["Username"]}).exec());
+						getSocket.emit('Broadcast', JSON.stringify(payload_template).replace(/"/g, "`"));
+						resolve(await upgrade.find({"user": data["Username"], "team": data["Team"]}).exec());
 					})					
 					.then(async (allUpgrades) => {
 						await allUpgrades.forEach(async (it_upgrades) => {
-							payloadData[it_upgrades["type"] + " " + it_upgrades["name"]] = it_upgrades["level"];
+							switch(data["Team"]){
+								case "Virus":
+									payloadData[it_upgrades["type"]] = it_upgrades["level"];
+									break;
+								case "Survivor":
+									payloadData[it_upgrades["type"] + " " + it_upgrades["name"]] = it_upgrades["level"];
+								break;
+							}
 						})
 					})						
 					.then(async () => {

@@ -23,21 +23,24 @@ public class VirusBody : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        decayTimer += Time.deltaTime;
-        if (decayTimer >= decayRate)
-        {
-            decayTimer = 0;
-            health -= 1;
-        }
 
         if (transform.position.y < -1000)
         {
             transform.position = new Vector3(transform.position.x, 20, transform.position.z);
             GetComponent<Rigidbody>().velocity = Vector3.zero;
         }
-
     }
 
+    public void virusDecayTick()
+    {
+        decayTimer += Time.deltaTime;
+        if (decayTimer >= decayRate)
+        {
+            decayTimer = 0;
+            health -= 1;
+            damageCheck();
+        }
+    }
     //public GameObject isDamage(bool network, float getValue, GameObject attacker)
     //{
     //    if (NetworkMain.local)
@@ -67,23 +70,14 @@ public class VirusBody : MonoBehaviour
     //    //        print(this);
     //}
 
-    private void damageCheck()
+    public void damageCheck()
     {
-        if (GetComponent<PlayerController>() != null)
+        if (health < 0)
         {
-            GetComponent<PlayerController>().getDamage = true;
-            if (health < 0)
-            {
-                GetComponent<PlayerController>().died();
-            }
+            Dictionary<string, string> payload = new Dictionary<string, string>();
+            payload["Type"] = "Player Action";
+            payload["Action"] = "Death";
+            NetworkMain.broadcastAction(payload);
         }
-        else
-        {
-            if (health < 0)
-            {
-                Destroy(this.gameObject);
-            }
-        }
-
     }
 }

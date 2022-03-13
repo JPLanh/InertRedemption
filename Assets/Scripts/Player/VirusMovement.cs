@@ -123,7 +123,8 @@ public class VirusMovement : MonoBehaviour
 
     public void PositionalUpdate()
     {
-        if (Time.time >= lastUpdate && lv_playerController.infectedPlayer == null &&  (lastRot != rotation || lastPos != lead.transform.position))
+//        if (Time.time >= lastUpdate && lv_playerController.infectedPlayer == null &&  (lastRot != rotation || lastPos != lead.transform.position))
+        if (Time.time >= lastUpdate)
         {
             lastPos = lead.transform.position;
             lastRot = rotation;

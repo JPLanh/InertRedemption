@@ -116,6 +116,7 @@ public class Console_Upgrade_Option : MonoBehaviour, ButtonListenerInterface
                     Dictionary<string, string> payload = new Dictionary<string, string>();
                     payload["Type"] = "Player Action";
                     payload["Action"] = "Upgrade";
+                    payload["Team"] = NetworkMain.Team;
                     payload["Level"] = StringUtils.convertIntToString(int.Parse(levelText.text) + 1);
                     string[] parsedUpgrade = optionText.text.Split(' ');
                     payload["Type"] = parsedUpgrade[0];

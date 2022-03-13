@@ -11,6 +11,7 @@ public class LoginScripts : MonoBehaviour, ButtonListenerInterface
     public GameObject IpField;
     [SerializeField]
     private ToastNotifications toast;
+    [SerializeField] private Text version;
     bool actionable = true;
     private float spamTimer;
 
@@ -31,6 +32,7 @@ public class LoginScripts : MonoBehaviour, ButtonListenerInterface
 
 //        createNewButton("Offline", "Go Offline", new Vector3(145f, 0f, 0f));
         createNewButton("Online", "Go Online", new Vector3(-145f, 0f, 0f));
+        version.text = Application.version;
     }
 
     // Update is called once per frame

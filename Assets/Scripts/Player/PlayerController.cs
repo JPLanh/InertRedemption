@@ -83,10 +83,13 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
     public int weaponState = 0;
 
     public float insanityLevel = 100;
+    public float fearTimer = 0f;
+    public List<string> inflictedList;
     private bool onShip = true;
     public AudioSource heartbeat_sound;
     public AudioSource breathing_sound;
     public PlayerNetworkListener networkListener;
+    public GameObject affliction_lists;
     #endregion
 
     #region Inits
@@ -105,6 +108,7 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
         //abilities[2].assignLivingBeing(livingBeing, this);
         //        abilities[3].assignLivingBeing(livingBeing, this);
         revealTarget = new List<GameObject>();
+        inflictedList = new List<string>();
 
         if (livingBeing.mainHand != null && livingBeing.mainHand.childCount > 0)
         {
@@ -167,7 +171,6 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
         gameObject.name = getUsername;
         livingBeing.setTeamColor(new Color(0f / 255f, 191f / 255f, 188f / 255f, .81f));
         inControl = false;
-        Debug.Log("Setting other player");
     }
 
 
@@ -323,10 +326,13 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
 
             if (Input.GetButtonDown("Debugger Mode"))
             {
-                Dictionary<string, string> payload = new Dictionary<string, string>();
-                payload.Add("Time", Time.time.ToString());
-                payload.Add("Action", "Ping");
-                NetworkMain.broadcastAction("Ping");
+                //GameObject lv_new_affliction = Instantiate(Resources.Load<GameObject>("Afflictions/Fear"), affliction_lists.transform);
+                //lv_new_affliction.TryGetComponent<Affliction_Fear>(out Affliction_Fear out_affliction);
+                //out_affliction.init(9, 5);
+                //Dictionary<string, string> payload = new Dictionary<string, string>();
+                //payload.Add("Time", Time.time.ToString());
+                //payload.Add("Action", "Ping");
+                //NetworkMain.broadcastAction("Ping");
             }
 
             if (Input.GetButtonDown("Build"))
@@ -1156,7 +1162,6 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
                 serverControl(in_payload.data);
                 break;
             case "Attach":
-                Debug.Log("Attaching perform");
                 foreach (KeyValuePair<string, VirusController> it_virus in EntityManager.virus)
                 {
                     getInfectionScript().infect(it_virus.Value);
@@ -1212,7 +1217,7 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
     public void serverControl(Dictionary<string, string> payload)
     {
         if (transform.position != StringUtils.getVectorFromJson(payload, "Pos")
-            || transform.localRotation != Quaternion.Euler(float.Parse(payload["xRot"]), 0, 0))
+            || transform.localRotation != Quaternion.Euler(0f, float.Parse(payload["yRot"]), 0f))
         {
             if (StringUtils.convertIntToString(weaponState) != payload["WeaponState"])
             {
@@ -1712,6 +1717,12 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
     public void death()
     {
         isAlive = false;
+        if (ifs.currentVirus != null)
+        {
+            ifs.currentVirus.Eject();
+            ifs.currentVirus.detachFromHost();
+        }
+        canvas.toast.newNotification($"{name} has died.");
         Destroy(gameObject);
     }
 
@@ -1758,14 +1769,14 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
         return allAddon;
     }
 
-    public void saveUpgrades()
-    {
-        List<IAddon> lv_all_addons = getAllAddons();
-        foreach(IAddon it_addon in lv_all_addons)
-        {
-//            Debug.Log($"Saving {it_addon.getName()} : level {it_addon.getLevel()}");
-        }
-    }
+//    public void saveUpgrades()
+//    {
+//        List<IAddon> lv_all_addons = getAllAddons();
+//        foreach(IAddon it_addon in lv_all_addons)
+//        {
+////            Debug.Log($"Saving {it_addon.getName()} : level {it_addon.getLevel()}");
+//        }
+//    }
 
     public void insanityUpdate(float in_light_level)
     {
@@ -1798,5 +1809,10 @@ public class PlayerController : MonoBehaviour, ButtonListenerInterface, IPlayerC
     public Inventory getInventory()
     {
         return inventory;
+    }
+
+    public void addNewInfliction()
+    {
+
     }
 }
